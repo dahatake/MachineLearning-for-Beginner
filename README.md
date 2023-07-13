@@ -1,0 +1,2 @@
+# MachineLearning-for-Beginner
+機械学習の原理や基礎をこれから学ぶ方向けのサンプルコードです
