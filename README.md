@@ -327,7 +327,7 @@ https://learn.microsoft.com/ja-jp/training/modules/classify-images-custom-vision
 
 # 3. AutoML
 
-金融機関での普通預金から定期預金になったというオープンデータを用いて、その予測のモデルを作成します。
+金融機関での普通預金から定期預金になったというオープンデータを用いて、その予測のモデルを作成します。**分類**のタスクを行います。
 ここでは、Python のコードは記載しません。Azure Machine Learning Studio の画面の中だけで、AutoML (自動機械学習) を実行します。
 
 ## 目的
@@ -337,5 +337,21 @@ https://learn.microsoft.com/ja-jp/training/modules/classify-images-custom-vision
 
 https://learn.microsoft.com/ja-jp/azure/machine-learning/tutorial-first-experiment-automated-ml?view=azureml-api-2
 
+変更点:
+- [4.タスクの設定]で[制限]の設定を行います。
+    - 最大ノード数: 3
+    - タイムアウト(分): 20
+    - 早期終了を有効にします: チェックする
+
+![AutoML設定](/images/aml-automl-config.jpg)
+
+注意点:
+- ドキュメントと実際の画面に違いがある事がありえます。画面で設定する項目は、ドキュメントの別の章に記載がありますので、注意深く参照してください
+- データセット(ファイル)を自分のPCにダウンロードをしてください。以下はドキュメントの中で指定しているファイルのURLです。
+    - https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv
+- ドキュメントにもありますが、学習のジョブを投入してから、全て完了するまで20分かかります
+
 ## Task
 - AutoML の利点・欠点をリストアップしてください
+- 幾つかのモデルの学習過程を調べてください
+- 最も性能の良いモデルの**説明**と、**責任あるあるAI** では、何がわかるか調べてください
