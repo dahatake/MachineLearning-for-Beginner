@@ -64,13 +64,13 @@ https://learn.microsoft.com/ja-jp/azure/azure-resource-manager/management/azure-
 - Custom Vision Service は Cognitive Service (旧名) になっています
 
 
-# 1. 環境構築
+# 0. 環境構築
 Windows 利用の前提です。WSLが使える、Windows 10 バージョン 2004 以上 (ビルド 19041 以上) または Windows 11 が推奨です。
 
 https://learn.microsoft.com/ja-jp/windows/wsl/install#prerequisites
 
 
-## 1.1. 環境セットアップ
+## 0.1. 環境セットアップ
 
 可能であれば OS や各種ソフトウェアを最新にしましょう。Windows Update や、winget コマンドなどで最新にします。
 
@@ -89,7 +89,7 @@ winget upgrade --all
 - Azure Machine Learning Python SDK
 
 
-### 1.1.1. wsl のインストール
+### 0.1.1. wsl のインストール
 
 こちらのドキュメントを参考にして、wsl をインストールします。
 https://learn.microsoft.com/ja-jp/windows/wsl/install
@@ -102,7 +102,7 @@ wsl --install
 - OSを再起動します
 - Ubuntu に管理者賞のUNIXユーザー名とパスワードを設定します。任意のもので。
 
-### 1.1.2. Python がインストールされている事を確認
+### 0.1.2. Python がインストールされている事を確認
 
 wsl でインストールされる Ubuntu には、Python がデフォルトでインストールされています。
 Windows のターミナルで**wsl**を実行して、wsl へログイン。その後、以下のコマンドで念のため確認をします。
@@ -117,7 +117,7 @@ python3 --version
 sudo apt-get install python3
 ```
 
-### 1.1.3. miniconda のインストール
+### 0.1.3. miniconda のインストール
 Python で複数のアプリケーションの実行環境を使い分けるために、miniconda をインストールします。
 
 - wsl のターミナルを起動します。
@@ -147,7 +147,7 @@ https://docs.conda.io/projects/conda/en/stable/commands.html
 
 ![conda-installed](/images/vscode-conda-validation.jpg)
 
-### 1.1.4. Visual Studio Code のインストール
+### 0.1.4. Visual Studio Code のインストール
 
 wsl のターミナルから、以下のコマンドを実行して、Visual Studio Code をインストールします。
 
@@ -172,7 +172,7 @@ Visual Studio Code で **Ctl + @** キーを押して、ターミナルを開き
 ![conect-wsl](/images/vscode-connect-wsl.jpg)
 
 
-### 1.1.5 extension のインストール
+### 0.1.5 extension のインストール
 
 Visul Studio Code 上で、Python や Jupyter Notebook などを利用できるように、各種 Extension (拡張機能) をインストールします。
 
@@ -214,7 +214,7 @@ wsl に接続した Visual Studio Code での Extension を確認してくださ
 
 ここからはVisual Studio Code を使って環境設定を進めます。
 
-### 1.1.6. MNIST用の miniconda 環境の作成
+### 0.1.6. MNIST用の miniconda 環境の作成
 
 Visual Studio Code で **Ctl + @** キーを押して、ターミナルを開きます。
 
@@ -272,7 +272,7 @@ tensor([[0.3380, 0.3845, 0.3217],
 https://pytorch.org/get-started/locally/#windows-verification
 
 
-# 2. (1) MNIST
+# 1. MNIST - 初めての機械学習モデルの作成
 機械学習の入門として代表的なサンプルになります。
 
 ## 目的
@@ -303,12 +303,12 @@ https://github.com/pytorch/examples/tree/main/mnist
 - MNIST の写真の一部をみて、どんなデータセットなのかを理解します
 - ニューラルネットワークの図を書いてみます
 - プログラムの構造をリスト化します。どこで何をしているのか?
-- 作成したモデルがファイルに保存をされていません。保存するためにプログラムを修正します。
+- 作成したモデルがファイルに保存をされていません。保存するためにプログラムを修正します
 
-# 3. (2) Deep Learning - Computer Vision
+# 2. Deep Learning - Computer Vision
 
 機械学習で画像を扱う処理をComputer Vision と称しています。
-PyTorch でも実装できます。ですが、ここではツールを使って学習までの一連の流れを体験します。
+PyTorch でも実装できます。ですが、ここではクラウドサービスを使って学習までの一連の流れを体験します。クラウドサービスであれば、GPU搭載コンピューターがあったり、各種煩雑な作業が実装されている事が多いからです。
 
 ## 目的
 - ツールの存在を知る。そのツールで出来る事、出来ない事を知る
@@ -355,3 +355,40 @@ https://learn.microsoft.com/ja-jp/azure/machine-learning/tutorial-first-experime
 - AutoML の利点・欠点をリストアップしてください
 - 幾つかのモデルの学習過程を調べてください
 - 最も性能の良いモデルの**説明**と、**責任あるあるAI** では、何がわかるか調べてください
+
+# 4. MNIST Update 1 - 学習状況と作成したモデルの保存
+最初に作成した MNIST の学習用のコードの場合、学習の状況がわからないのと、モデルの保存は自分のPCです。つまり、他の人と共有が難しいですし、学習用のコードが動いている間は、そのPCは起動し続けさせる必要があります。
+
+ここでは、学習用のコードと、それを制御するコードを分離させます。そして、学習状況や、モデルのファイルを一括して保存・管理してくれるサービスとして Azure Machine Learning を使います。
+
+## 目的
+- チームでのモデル開発
+- 学習時の状況を記録して、比較検討を出来るようにする
+
+
+### 4.1. Mminiconda 環境の作成
+
+Visual Studio Code で **Ctl + @** キーを押して、ターミナルを開きます。
+
+
+以下のコマンドで MNIST用の miniconda 環境を作成します。
+
+```shell
+conda create --name mnist-azureml
+```
+
+作成した環境に切り替えます。
+
+```shell
+conda activate mnist-azureml
+```
+
+Azure Machine Learning の Python SDK をインストールします。
+
+```shell
+pip install azure-ai-ml
+pip install azure-identity
+pip install mlflow azureml-mlflow
+```
+
+https://learn.microsoft.com/ja-jp/python/api/overview/azure/ai-ml-readme?view=azure-python
