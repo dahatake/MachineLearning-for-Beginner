@@ -1,19 +1,15 @@
 # MachineLearning-for-Beginner
 機械学習の原理や基礎をこれから学ぶ方向けのサンプルコードです。
 
-ここでは以下の3つを体験します。
+ここでは以下の2つを体験を通して。機械学習について学びます。
 
 1. MNIST
-機械学習での Hello World ともいえる極めて有名なデータセットです。手書き画像の0-9の分類を行います。Convolutional neural network (CNN) のモデルを作成します。
+機械学習での Hello World ともいえる極めて有名なデータセットです。手書き画像の0-9の**分類**を行います。Convolutional neural network (CNN) のモデルを作成します。
 画像処理ですからGPUがあった方が処理は早いです。ですが、小さな画像ですので、GPUの無いコンピューターでも、それ程時間はかかりません。
 
 2. Computer Vision のモデル作成のタスクを行う
-主に、アノテーション(ラベリング)と、学習の実行、推論用Web Server作成を行います。
+主に、アノテーション(ラベリング)と、学習の実行を行います。
 
-3. AutoML
-機械学習の学習のプロセスでは、データセットを変えたり、ハイパーパラメーターを変えたりといった試行錯誤が幾度も行われます。
-AutoML (自動機械学習) では、データセットの作成や調整・ハイパーパラメーターの自動調整だけでなく、各種学習環境用の仮想マシンのセットアップ・起動・インストール・停止や、複数ジョブの同時実行でのアンサンブル学習。各種ログの保存とグラフ化などを行ってくれます。
-今回は Azure Machine Learning の AutoML でそれを試してみます。
 
 # Azure 利用環境の作成
 
@@ -23,35 +19,33 @@ AutoML (自動機械学習) では、データセットの作成や調整・ハ�
 
 無料かつクレジットカードの登録無しで、100 USD 分/月 の Azure 利用などや各種ソフトウェアの利用もできる学生向けの特典を利用できます。
 
-こちらのサイトから、学校のアカウント(メールアドレス)で、サインアップします。
+こちらのドキュメントに従って、学校のアカウント(メールアドレス)で、Azure Education Hub にログインします。
+
+https://learn.microsoft.com/ja-jp/azure/education-hub/access-education-hub
+
+[学習リソース]の[GitHub]に移動します。**GitHub Student Developer Pack にサインアップする** の [サインアップ]ボタンを押します。
+
+![image](/images/eduhub-GitHub-Overview.jpg)
+
+GitHub Student Developer Pack のサイトに移動します。
+緑色の**Sign up for Student Developer Pack**のボタンを押します。
+
+Individuals の Students から **Get student benefits** を押します。
+
+![github-individuals](/images/github-individuals-students.jpg)
+
+
+
 
 https://azure.microsoft.com/ja-jp/free/students/
-
-## b. クォーター増加
-Azure for Students の場合、Azureが使える状態になっていても、初期状態ですと、利用できるCPUの数などが少ない場合があります。事前にそのクォーター(上限数)の増加を行ってください。
-
-クォーターの増加手順: https://learn.microsoft.com/ja-jp/azure/quotas/quickstart-increase-quota-portal
 
 
 ### 利用する Azure の Service
 
 - Azure AI Services : Custom Vision Service
     - プロジェクト 1つ以上
-- Azure Macnine Learning Services
-    - 30コア程度
 
-**Azure Machine Learning** のクォーター増加手順は、上記と**別**になっています。ご注意ください。
-
-Azure Machine Learning 用のコンピューター:
-
-https://learn.microsoft.com/ja-jp/azure/machine-learning/how-to-manage-quotas?view=azureml-api-2
-
-- GPUは不要です
-- どのコンピューターでも大丈夫です。
-- 専用コア と 低優先度コア があります。大人数でハンズオンなど実施する場合は **専用コア** を選択してください。「低優先度」の場合は、コンピューター利用時のデータセンターの空きに依存するため、コンピューターが起動しない場合がありえます。専用の場合は、大丈夫です
-- コア数としては30あれば十分です。4コアの場合は、同時に5台のコンピューターが利用できます
-
-### サービス自体が作成できない場合:
+### サービスの作成できない場合:
 
 ご利用のAzure Subscription で、リソース プロバイダーが有効化されていない事があります。
 
@@ -65,119 +59,36 @@ https://learn.microsoft.com/ja-jp/azure/azure-resource-manager/management/azure-
 
 
 # 0. 環境構築
-Windows 利用の前提です。WSLが使える、Windows 10 バージョン 2004 以上 (ビルド 19041 以上) または Windows 11 が推奨です。
 
-https://learn.microsoft.com/ja-jp/windows/wsl/install#prerequisites
+予め出来上がった環境を使う方法もあります。ですが。
 
-
-## 0.1. 環境セットアップ
-
-可能であれば OS や各種ソフトウェアを最新にしましょう。Windows Update や、winget コマンドなどで最新にします。
-
-winget で各種アプリケーションを最新のバージョンに
-```cmd
-winget upgrade --all
-```
-
-以下の環境をインストールします。
-- Visual Studio Code
-- WSL
+以下のアプリケーションをインストールします。
 - Python
-- miniconda
+- Visual Studio Code
 
-以下は、AutoML のために使います。
-- Azure Machine Learning Python SDK
+## 0.1. Python のインストール
 
+以下の公式サイトからインストールを行います
 
-### 0.1.1. wsl のインストール
+https://www.python.org/downloads/
 
-こちらのドキュメントを参考にして、wsl をインストールします。
-https://learn.microsoft.com/ja-jp/windows/wsl/install
+インストールが終わったら、コマンドプロンプトもしくはターミナルを起動します。以下のコマンドでインストールされている事を確認をします。
 
-- Windows のターミナルを**管理者**として起動します
-- 以下のコマンドを実行します
-```cmd
-wsl --install
-```
-- OSを再起動します
-- Ubuntu に管理者賞のUNIXユーザー名とパスワードを設定します。任意のもので。
-
-### 0.1.2. Python がインストールされている事を確認
-
-wsl でインストールされる Ubuntu には、Python がデフォルトでインストールされています。
-Windows のターミナルで**wsl**を実行して、wsl へログイン。その後、以下のコマンドで念のため確認をします。
-
-```cmd
+```shell
 python3 --version
 ```
 
-もしインストールされていない場合は、wslにて以下のコマンドを実行します。
+### 0.2. Visual Studio Code のインストール
 
-```cmd
-sudo apt-get install python3
-```
-
-### 0.1.3. miniconda のインストール
-Python で複数のアプリケーションの実行環境を使い分けるために、miniconda をインストールします。
-
-- wsl のターミナルを起動します。
-
-- 以下のコマンドでファイルをダウンロードします。
-```shell
-wget -c https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.s
-```
-
-- 以下のコマンドで、ダウンロードしたファイルを実行します
-```shell
-bash Miniconda3-latest-Linux-x86_64.sh
-```
-- ライセンスアグリーメントに同意する必要があります。Enterキーを押します。その後、SpaceキーもしくはEnterキーを押して、全てのライセンスアグリーメントのドキュメントを表示させます
-- ライセンスに同意するのかを[yes]か[no]で入力します。ここでは、**yes** を入力してライセンスに同意します。
-- インストールの場所を選択できます。そのまま Enterキー を押してデフォルトの場所にインストールします。
-- インストールが終了すると、初期化するかどうかを設定できます。ここでも**yes**を入力して、初期化を実行します。
-
-miniconda インストール:
-https://docs.conda.io/en/latest/miniconda.html#installing
-
-
-miniconda 各種コマンド:
-https://docs.conda.io/projects/conda/en/stable/commands.html
-
-以下の画面の通り、ターミナル内の表示に **(base)** がある事を確認します。これで miniconda が動いている事がわかります。
-
-![conda-installed](/images/vscode-conda-validation.jpg)
-
-### 0.1.4. Visual Studio Code のインストール
-
-wsl のターミナルから、以下のコマンドを実行して、Visual Studio Code をインストールします。
-
-```shell
-code .
-```
-
-公式ドキュメント:
-https://learn.microsoft.com/ja-jp/windows/wsl/tutorials/wsl-vscode
-
-
-Windows に戻ります。以下のサイトから、Visual Studio Code をダウンロードして、Windows にインストールします
+以下のサイトから、Visual Studio Code をダウンロードして、Windows にインストールします
 
 https://code.visualstudio.com/
 
 Visual Studio Code を起動します。
 
-Visual Studio Code で **Ctl + @** キーを押して、ターミナルを開きます。
-
-以下の画面の通り、ターミナルから**Ubuntu**を選択して、wsl上の ubuntu に接続します。
-
-![conect-wsl](/images/vscode-connect-wsl.jpg)
-
-
-### 0.1.5 extension のインストール
+### 0.2.1 extension のインストール
 
 Visul Studio Code 上で、Python や Jupyter Notebook などを利用できるように、各種 Extension (拡張機能) をインストールします。
-
-ローカルの Windows と wsl 上の Ubuntu の双方の Visual Studio Code にインスタンスします。
-![extension-installed](/images/vscode-extensions-installed.jpg)
 
 Extension のインストールは、[Marketplace で拡張機能を検索する] から行うと便利です。
 
@@ -191,85 +102,9 @@ Extension のインストールは、[Marketplace で拡張機能を検索する
 
 ![Python](/images/vscode-extensions-python.jpg)
 
-- wsl
+- Jupyter Notebook の Extension
 
-![wsl](/images/vscode-extensions-wsl.jpg)
-
-
-これで Visual Studio Code から wsl へ接続する準備が出来ました。
-
-Visual Studio Code 画面左下のボタンを押して、wsl に接続します。
-
-![connect-wsl](/images/vscode-connect-wsl.jpg)
-
-接続が完了すると、画面左下に **wsl** が表示されます。
-
-![connected-wsl](/images/vscode-connect-wsl-done.jpg)
-
-wsl から Windows のファイルを参照する際には **/mnt/c/** フォルダーから参照します。WindowsのC Driveが、/mnt/ に接続されています。
-
-![mnt-windows](/images/vscode-wsl-change-directory.jpg)
-
-wsl に接続した Visual Studio Code での Extension を確認してください。先ほどの Extension がインストールされていない場合には、インストールを行います。
-
-ここからはVisual Studio Code を使って環境設定を進めます。
-
-### 0.1.6. MNIST用の miniconda 環境の作成
-
-Visual Studio Code で **Ctl + @** キーを押して、ターミナルを開きます。
-
-
-以下のコマンドで MNIST用の miniconda 環境を作成します。
-
-```shell
-conda create --name mnist
-```
-
-作成した環境に切り替えます。
-
-```shell
-conda activate mnist
-```
-
-今回のサンプルでは、PyTorch を使います。
-
-CPUのみの場合:
-```shell
-conda install pytorch torchvision torchaudio cpuonly -c pytorch
-```
-
-GPU搭載のマシンの場合:
-```shell
-conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
-```
-
-Windows へのインストールのドキュメント:
-https://learn.microsoft.com/ja-jp/windows/ai/windows-ml/tutorials/pytorch-installation
-
-
-以下のコマンドでインストールが成功しているかを確認します。
-
-```shell
-python
-```
-
-```shell
-import torch
-x = torch.rand(5, 3)
-print(x)
-```
-
-以下の様な出力がされていれば正常にインストールされています。
-
-```shell
-tensor([[0.3380, 0.3845, 0.3217],
-        [0.8337, 0.9050, 0.2650],
-        [0.2979, 0.7141, 0.9069],
-        [0.1449, 0.1132, 0.1375],
-        [0.4675, 0.3947, 0.1426]])
-```
-
-https://pytorch.org/get-started/locally/#windows-verification
+![notebook](/images/vscode-extensions-notebook.jpg)
 
 
 # 1. MNIST - 初めての機械学習モデルの作成
