@@ -4,69 +4,62 @@
 ここでは以下の2つを体験を通して。機械学習について学びます。
 
 1. MNIST
-機械学習での Hello World ともいえる極めて有名なデータセットです。手書き画像の0-9の**分類**を行います。Convolutional neural network (CNN) のモデルを作成します。
+機械学習での Hello World ともいえる極めて有名なデータセットです。手書き画像の0-9の**分類**を行います。
 画像処理ですからGPUがあった方が処理は早いです。ですが、小さな画像ですので、GPUの無いコンピューターでも、それ程時間はかかりません。
+
+アルゴリズムは、SVCと、Neural Networkの双方を試します。
 
 2. Computer Vision のモデル作成のタスクを行う
 主に、アノテーション(ラベリング)と、学習の実行を行います。
 
+# 対象者
+- 一般的なPythonのプログラミングの基本コースを終了した方
+- 理工学部だが、情報工学は専攻外の方
+- Jupyter Notebook あるいは Jupyter Lab の一般的な使い方を知っている方
+    - https://jupyter.org/try
 
-# Azure 利用環境の作成
+# 利用ツール
 
-ここでは、大学・専門学校の皆様向けの方法を記載します。
-
-## a. Azure for Students の取得
-
-無料かつクレジットカードの登録無しで、100 USD 分/月 の Azure 利用などや各種ソフトウェアの利用もできる学生向けの特典を利用できます。
-
-こちらのドキュメントに従って、学校のアカウント(メールアドレス)で、Azure Education Hub にログインします。
-
-https://learn.microsoft.com/ja-jp/azure/education-hub/access-education-hub
-
-[学習リソース]の[GitHub]に移動します。**GitHub Student Developer Pack にサインアップする** の [サインアップ]ボタンを押します。
-
-![image](/images/eduhub-GitHub-Overview.jpg)
-
-GitHub Student Developer Pack のサイトに移動します。
-緑色の**Sign up for Student Developer Pack**のボタンを押します。
-
-Individuals の Students から **Get student benefits** を押します。
-
-![github-individuals](/images/github-individuals-students.jpg)
-
-
-
-
-https://azure.microsoft.com/ja-jp/free/students/
-
-
-### 利用する Azure の Service
-
-- Azure AI Services : Custom Vision Service
-    - プロジェクト 1つ以上
-
-### サービスの作成できない場合:
-
-ご利用のAzure Subscription で、リソース プロバイダーが有効化されていない事があります。
-
-https://learn.microsoft.com/ja-jp/azure/azure-resource-manager/management/resource-providers-and-types
-
-
-リソースプロバイダーの一覧:
-https://learn.microsoft.com/ja-jp/azure/azure-resource-manager/management/azure-services-resource-providers?source=recommendations
-
-- Custom Vision Service は Cognitive Service (旧名) になっています
-
+- Jupyter Notebook
+- Lobe.ai
 
 # 0. 環境構築
 
-予め出来上がった環境を使う方法もあります。ですが。
+機械学習のソフトウェア開発に必要な環境を整備します。
 
 以下のアプリケーションをインストールします。
 - Python
-- Visual Studio Code
+- Anaconda
 
-## 0.1. Python のインストール
+## 0.1 作業ディレクトリの作成
+
+このワークショップのための作業ディレクトリを作成します。例えば、以下の様な場所に作成します。
+
+```shell
+C:\Work
+```
+
+このテキストでは、作業ディレクトリを **C:\Work** とします。他の場所に作成した場合は、適宜読み替えてください。
+
+
+## 0.2. このワークショップで使う、ファイルのダウンロード
+
+クローンとはダウンロードとほぼ同期です。実際には、Gitというツールを使って、複製を作成して、その後の変更点を大元に反映させるための準備をする事です。
+
+幾つも方法はあります。
+
+- zip圧縮してダウンロード
+
+![download-zip](/images/github-download-as-zip.jpg)
+
+- (自分のPCもしくはMacにGitがインストール済みの場合) git clone コマンドでダウンロード
+
+```shell
+git clone https://github.com/dahatake/MachineLearning-for-Beginner.git
+```
+
+
+## 0.3. Python のインストール
 
 以下の公式サイトからインストールを行います
 
@@ -78,83 +71,151 @@ https://www.python.org/downloads/
 python3 --version
 ```
 
-### 0.2. Visual Studio Code のインストール
+## 0.4. Anaconda のインストール
 
-以下のサイトから、Visual Studio Code をダウンロードして、Windows にインストールします
+以下の公式サイトから**無料版 | Free** をダウンロードして、インストールします。
+インストール時間は、環境にも寄りますが**5分程度**かかるかと思います。
 
-https://code.visualstudio.com/
+https://www.anaconda.com/
 
-Visual Studio Code を起動します。
+### 0.4.1. Anaconda の環境 (Environment) の作成
 
-### 0.2.1 extension のインストール
+既存の Anaconda の環境ファイルを取り込んで、自分のPC/Macに同じ環境を作成します。
 
-Visul Studio Code 上で、Python や Jupyter Notebook などを利用できるように、各種 Extension (拡張機能) をインストールします。
+環境ファイルは、このリポジトリの中にあります。**mnist.yml** です。
 
-Extension のインストールは、[Marketplace で拡張機能を検索する] から行うと便利です。
+- Anaconda Navigator を起動します
+    - Sing in/Sing up はしなくていいです
+- [Environment] に移動して、[Import] を選択します。
+- Import Environment 画面で、各項目を設定します。
 
-![Visual Studio Code の extansion](/images/vscode-extensions.jpg)
 
-- 日本語パック
+| 項目名 | 設定値 | 内容 |
+| --- | --- | --- |
+| local drive | mnist.yml のファイルパス | 環境ファイルを選択します |
+| New environment name | mnist | 環境名を入力します |
 
-![日本語化](/images/vscode-extensions-japanese.jpg)
+![import-environment](/images/anaconda-import-environment.jpg)
 
-- Python のExtension
+このテキストでは Anaconda の Environment 名を **mnist** としています。ご自身で作成したものに読み替えてください。
 
-![Python](/images/vscode-extensions-python.jpg)
+### 0.4.2. (オプション) Jupyter Notebook のインストール
 
-- Jupyter Notebook の Extension
+Anaconda Navigator の [Home] で、Jupyter Notebook が表示されていない場合は、インストールを行います。表示されている方は、スキップして、1 へ進んでください。
 
-![notebook](/images/vscode-extensions-notebook.jpg)
+- [Environments] に移動します。
+- 先ほど作成した Environment を選択します。ここでは、**mnist** です。
+- 画面上部で、インストール済みかどうかなどを選択できるようになっています。ここでは **[Not installed]** を選択します。 
+
+![install-notebook](/images/anaconda-install-notebook.jpg)
+
+
+- 画面右上の検索ボックスに **notebook** と入力します
+- 検索結果から**notebook**を選択します。
+- 画面下の **Apply** を押します
+
+![search-notebook](/images/anaconda-install-notebook-check-notebook.jpg)
+
+- 依存関係などを調査した上で、関連するパッケージをインストールします。**Apply** を押します
+
+![apply-dependency](/images/anaconda-install-notebook-apply-related-packages.jpg)
+
+
+### 0.4.3. Jupyter Notebook の起動
+
+Jupyter Notebook が起動できるかを確認します。
+
+- [Environment] - [mnist] を選択します
+- 三角のアイコンをクリックして、**Open with Jupyter Notebook** を選択します
+
+![Jupyter Notebook run](/images/anaconda-run-notebook.jpg)
+
+### 0.4.4. Jupyter Notebook の作業ディレクトリの変更
+
+初期設定ですと、Jupyter Notebook は、ユーザーの**ホームディレクトリ**に作成されます。作業フォルダを変更するには、以下の手順を実行します:
+
+- **Anaconda Prompt** を起動します。
+- 以下のコマンドを入力して、設定ファイルを作成します。
+```shell
+jupyter notebook --generate-config
+```
+
+設定ファイルは、Windowsの場合は、以下の様な場所に出来ています。
+
+```cmd
+C:\Users\<<ユーザーアカウント名>>\.jupyter
+```
+
+- 作成されたファイルを開き、**c.ServerApp.root_dir**を検索し、コメントを外します。コメントは行頭の「#」の文字です。
+
+- **c.ServerApp.root_dir**の後に、作業フォルダのパスを指定します。
+
+例:
+```shell
+c.ServerApp.root_dir = r'C:/Work'
+```
+- 設定ファイルを保存します。
 
 
 # 1. MNIST - 初めての機械学習モデルの作成
 機械学習の入門として代表的なサンプルになります。
 
+機械学習でとてもよく使われている scikit-learn というライブラリを使って、MNIST というデータセットを使って、手書き数字の画像を分類します。
+
+ファイルの説明
+
+```cmd
+mnist --- ディレクトリ
+        |--- plot_digits_classification.ipynb --- SVCでのモデル作成
+        |--- mnist_pytorch.ipynb --- CNNでのモデル作成
+```
+
+このサンプルコードは、sci-kit learn の公式サイトにあるものを使っています。
+
+https://scikit-learn.org/stable/auto_examples/classification/plot_digits_classification.html
+
+サンプルコードはこちらです。
+
+[plot_digits_classification.ipynb](mnist/plot_digits_classification.ipynb)
+
 ## 目的
 - 自分の環境でモデルの作成を行う
 - 機械学習の学習のプログラムの概要を理解する
-- 深層学習 (Deep Learning)のプログラムの概要を理解する
-
-
-プログラムのコードはこちらです。
-
-[コード](/1.mnist/mnist.py)
-
-- ターミナルで [1.mnist] フォルダに移動
-- 以下のコマンドを実行
-
-```shell
-python mnist.py
-```
-
-オリジナルコードはこちらです。
-https://github.com/pytorch/examples/tree/main/mnist
-
-実行結果は、以下の様になります。
-
-![結果](/images/mnist-executed.jpg)
 
 ## Task:
-- MNIST の写真の一部をみて、どんなデータセットなのかを理解します
-- ニューラルネットワークの図を書いてみます
+- MNIST の写真の一部をみて、どんなデータセットなのかを理解する
 - プログラムの構造をリスト化します。どこで何をしているのか?
+- アルゴリズムがSVCとNeural Networkの2つあります。それぞれの違いを調べてください
+- Neural Network のコードをどう修正すれば Deep Neural Network になるか調べてください
 - 作成したモデルがファイルに保存をされていません。保存するためにプログラムを修正します
 
 # 2. Deep Learning - Computer Vision
 
 機械学習で画像を扱う処理をComputer Vision と称しています。
-PyTorch でも実装できます。ですが、ここではクラウドサービスを使って学習までの一連の流れを体験します。クラウドサービスであれば、GPU搭載コンピューターがあったり、各種煩雑な作業が実装されている事が多いからです。
+
+PyTorch でも実装できます。ですが、ここではクラウドサービスを使って学習までの一連の流れを体験します。クラウドサービスであれば、GPU搭載コンピューターの購入や設定など、各種煩雑な作業を任せる事ができます。
 
 ## 目的
 - ツールの存在を知る。そのツールで出来る事、出来ない事を知る
 
 
-Microsoft Learn のドキュメントの通り実行してください。
+このテキストでは**Lobe.ai**というツールを使います。
 
-https://learn.microsoft.com/ja-jp/training/modules/classify-images-custom-vision/
+https://www.lobe.ai/
 
-- 演習から、英語のe-learning のサイトに行きます
-- 英語の[AI-900-AIFundamentals]のサイトでは、前処理・モデル作成・推論環境作成・呼び出しアプリケーション作成までを行うテキストがあります。推論環境作成 **[Publish the image classification model]** まで実行してください。それ以降を行う必要はありません。
+Lobe.ai は、画像のアノテーション(ラベリング)と、学習の実行を行うツールです。無料で利用することが出来ます。
+
+こちらの Blog post を参考に以下を行います。
+
+- Lobe.ai のインストール
+- Computer Vision モデルの作成
+
+
+> [!IMPORTANT]
+> **手順 4 テスト** まで行ってください。その先の5以降を行う必要はありません!
+
+
+https://qiita.com/dahatake/items/05efc18eaf03605cb7d0
 
 ## Task:
 - Computer Vision の主な処理には分類 (Image Classification)以外に何がありますか?
@@ -191,39 +252,49 @@ https://learn.microsoft.com/ja-jp/azure/machine-learning/tutorial-first-experime
 - 幾つかのモデルの学習過程を調べてください
 - 最も性能の良いモデルの**説明**と、**責任あるあるAI** では、何がわかるか調べてください
 
-# 4. MNIST Update 1 - 学習状況と作成したモデルの保存
-最初に作成した MNIST の学習用のコードの場合、学習の状況がわからないのと、モデルの保存は自分のPCです。つまり、他の人と共有が難しいですし、学習用のコードが動いている間は、そのPCは起動し続けさせる必要があります。
+# (オプション) Azure for Student のセットアップ 推奨
+- Microsoft Azure: 学生の方は無償で利用できる枠があります
 
-ここでは、学習用のコードと、それを制御するコードを分離させます。そして、学習状況や、モデルのファイルを一括して保存・管理してくれるサービスとして Azure Machine Learning を使います。
+# Azure 利用環境の作成
 
-## 目的
-- チームでのモデル開発
-- 学習時の状況を記録して、比較検討を出来るようにする
+ここでは、大学・専門学校の皆様向けの方法を記載します。
+
+## (オプション) Azure for Students の取得
+
+無料かつクレジットカードの登録無しで、100 USD 分/月 の Azure 利用などや各種ソフトウェアの利用もできる**学生向けの特典**を利用できます。
+
+こちらのドキュメントに従って、学校のアカウント(メールアドレス)で、Azure Education Hub にログインします。
+
+https://learn.microsoft.com/ja-jp/azure/education-hub/access-education-hub
+
+[学習リソース]の[GitHub]に移動します。**GitHub Student Developer Pack にサインアップする** の [サインアップ]ボタンを押します。
+
+![image](/images/eduhub-GitHub-Overview.jpg)
+
+GitHub Student Developer Pack のサイトに移動します。
+緑色の**Sign up for Student Developer Pack**のボタンを押します。
+
+Individuals の Students から **Get student benefits** を押します。
+
+![github-individuals](/images/github-individuals-students.jpg)
 
 
-### 4.1. Mminiconda 環境の作成
-
-Visual Studio Code で **Ctl + @** キーを押して、ターミナルを開きます。
+https://azure.microsoft.com/ja-jp/free/students/
 
 
-以下のコマンドで MNIST用の miniconda 環境を作成します。
+### 利用する Azure の Service
 
-```shell
-conda create --name mnist-azureml
-```
+- Azure AI Services : Custom Vision Service
+    - プロジェクト 1つ以上
 
-作成した環境に切り替えます。
+### サービスの作成できない場合:
 
-```shell
-conda activate mnist-azureml
-```
+ご利用のAzure Subscription で、リソース プロバイダーが有効化されていない事があります。
 
-Azure Machine Learning の Python SDK をインストールします。
+https://learn.microsoft.com/ja-jp/azure/azure-resource-manager/management/resource-providers-and-types
 
-```shell
-pip install azure-ai-ml
-pip install azure-identity
-pip install mlflow azureml-mlflow
-```
 
-https://learn.microsoft.com/ja-jp/python/api/overview/azure/ai-ml-readme?view=azure-python
+リソースプロバイダーの一覧:
+https://learn.microsoft.com/ja-jp/azure/azure-resource-manager/management/azure-services-resource-providers?source=recommendations
+
+- Custom Vision Service は Cognitive Service (旧名) になっています
