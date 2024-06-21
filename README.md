@@ -31,26 +31,29 @@
 - Python
 - Anaconda
 
-## 0.1 作業ディレクトリの作成
+## 0.1 作業フォルダの作成
 
-このワークショップのための作業ディレクトリを作成します。例えば、以下の様な場所に作成します。
+このワークショップのための作業フォルダを作成します。例えば、以下の様な場所に作成します。
 
 ```shell
 C:\Work
 ```
 
-このテキストでは、作業ディレクトリを **C:\Work** とします。他の場所に作成した場合は、適宜読み替えてください。
+このテキストでは、`作業フォルダ`を **C:\Work** とします。他の場所に作成した場合は、適宜読み替えてください。
 
 
-## 0.2. このワークショップで使う、ファイルのダウンロード
+## 0.2. このワークショップで使うファイルのダウンロード
 
-クローンとはダウンロードとほぼ同期です。実際には、Gitというツールを使って、複製を作成して、その後の変更点を大元に反映させるための準備をする事です。
+クローンとはダウンロードとほぼ同期です。実際には、Gitというツールを使って、複製を自分のPCあるいはMacに作成しします。その後の作業での変更点を大元に反映させるための準備をする事でもあります。
+
 
 幾つも方法はあります。
 
 - zip圧縮してダウンロード
 
 ![download-zip](/images/github-download-as-zip.jpg)
+
+zip圧縮のファイルは、展開してください。
 
 - (自分のPCもしくはMacにGitがインストール済みの場合) git clone コマンドでダウンロード
 
@@ -59,30 +62,54 @@ git clone https://github.com/dahatake/MachineLearning-for-Beginner.git
 ```
 
 
-## 0.3. Python のインストール
+展開後のファイルを全て、先ほどの`作業フォルダ`にコピーします。
 
-以下の公式サイトからインストールを行います
+## 0.3. Anaconda のインストール
 
-https://www.python.org/downloads/
-
-インストールが終わったら、コマンドプロンプトもしくはターミナルを起動します。以下のコマンドでインストールされている事を確認をします。
-
-```shell
-python3 --version
-```
-
-## 0.4. Anaconda のインストール
-
+自分のPCあるいはMacにインストールがされていない場合はインストールを行ってください。
 以下の公式サイトから**無料版 | Free** をダウンロードして、インストールします。
+
+ダウンロード画面にメールアドレスでの登録を促して `Registration`の項目がありま。ここは、**スキップ**しても構いません。
+
+![anaconda-download](/images/anaconda-skip-registration.jpg)
+
 インストール時間は、環境にも寄りますが**5分程度**かかるかと思います。
 
 https://www.anaconda.com/
 
-### 0.4.1. Anaconda の環境 (Environment) の作成
+### 0.3.1. Anaconda の環境 (Environment) の作成
 
-既存の Anaconda の環境ファイルを取り込んで、自分のPC/Macに同じ環境を作成します。
+既存の Anaconda の環境ファイルを取り込んで、自分のPCあるいはMacに同じ環境を作成します。環境は、特定のプログラムを動かす際に必要となるパッケージ(ライブラリとも言います)を一度にダウンロードするなりして、動作実行を行える状態を指します。まさに動作「環境」ですね。
 
 環境ファイルは、このリポジトリの中にあります。**mnist.yml** です。
+
+このテキストでは Anaconda の Environment 名を **mnist** としています。ご自身で作成したものに読み替えてください。
+
+- **Anaconda Prompt** を起動します。
+- 作業フォルダーまで移動します。以下は例です。ご自分の環境に合わせて変更してください。
+
+```cmd
+cd C:\Work
+```
+
+- 以下のコマンドを入力して、`Channel`を追加します。Anacondaでの多くのパッケージが、用意されている`defaults`のチャネル以外の`conda-forge`や `pytorch`にあります。
+
+```cmd
+conda config --add channels conda-forge
+```
+
+```cmd
+conda config --add channels pytorch
+```
+
+- 以下のコマンドを入力して、`環境 (Environment)`を作成します。**5分程度**かかります。
+
+```shell
+conda env create -f mnist.yml
+```
+
+---------------------------------
+
 
 - Anaconda Navigator を起動します
     - Sing in/Sing up はしなくていいです
@@ -97,9 +124,9 @@ https://www.anaconda.com/
 
 ![import-environment](/images/anaconda-import-environment.jpg)
 
-このテキストでは Anaconda の Environment 名を **mnist** としています。ご自身で作成したものに読み替えてください。
 
-### 0.4.2. (オプション) Jupyter Notebook のインストール
+
+### 0.3.2. (オプション) Jupyter Notebook のインストール
 
 Anaconda Navigator の [Home] で、Jupyter Notebook が表示されていない場合は、インストールを行います。表示されている方は、スキップして、1 へ進んでください。
 
@@ -120,17 +147,7 @@ Anaconda Navigator の [Home] で、Jupyter Notebook が表示されていない
 
 ![apply-dependency](/images/anaconda-install-notebook-apply-related-packages.jpg)
 
-
-### 0.4.3. Jupyter Notebook の起動
-
-Jupyter Notebook が起動できるかを確認します。
-
-- [Environment] - [mnist] を選択します
-- 三角のアイコンをクリックして、**Open with Jupyter Notebook** を選択します
-
-![Jupyter Notebook run](/images/anaconda-run-notebook.jpg)
-
-### 0.4.4. Jupyter Notebook の作業ディレクトリの変更
+### 0.3.3. Jupyter Notebook の作業フォルダの変更
 
 初期設定ですと、Jupyter Notebook は、ユーザーの**ホームディレクトリ**に作成されます。作業フォルダを変更するには、以下の手順を実行します:
 
@@ -155,6 +172,16 @@ C:\Users\<<ユーザーアカウント名>>\.jupyter
 c.ServerApp.root_dir = r'C:/Work'
 ```
 - 設定ファイルを保存します。
+
+
+### 0.3.4. Jupyter Notebook の起動
+
+Jupyter Notebook が起動できるかを確認します。
+
+- [Environment] - [mnist] を選択します
+- 三角のアイコンをクリックして、**Open with Jupyter Notebook** を選択します
+
+![Jupyter Notebook run](/images/anaconda-run-notebook.jpg)
 
 
 # 1. MNIST - 初めての機械学習モデルの作成
@@ -183,21 +210,22 @@ https://scikit-learn.org/stable/auto_examples/classification/plot_digits_classif
 - 機械学習の学習のプログラムの概要を理解する
 
 ## Task:
-- MNIST の写真の一部をみて、どんなデータセットなのかを理解する
-- プログラムの構造をリスト化します。どこで何をしているのか?
-- アルゴリズムがSVCとNeural Networkの2つあります。それぞれの違いを調べてください
-- Neural Network のコードをどう修正すれば Deep Neural Network になるか調べてください
+- `plot_digits_classification.ipynb` を開いて、実行してみてください
+    - MNIST の写真の一部をみて、どんなデータセットなのかを理解する
+    - プログラムの構造をリスト化します。どこで何をしているのか?
+- `mnist_pytorch.ipynb` を開いて、実行してみてください
+    - アルゴリズムが`SVC`と`Neural Network`の2つあります。それぞれの違いを調べてください
+    - Neural Network のコードをどう修正すれば `Deep Neural Network` になるか調べてください
 - 作成したモデルがファイルに保存をされていません。保存するためにプログラムを修正します
 
 # 2. Deep Learning - Computer Vision
 
-機械学習で画像を扱う処理をComputer Vision と称しています。
+機械学習で画像を扱う処理を`Computer Vision` と称しています。
 
-PyTorch でも実装できます。ですが、ここではクラウドサービスを使って学習までの一連の流れを体験します。クラウドサービスであれば、GPU搭載コンピューターの購入や設定など、各種煩雑な作業を任せる事ができます。
+PyTorch でも実装できます。ですが、ここではツールを使って学習までの一連の流れを体験します。
 
 ## 目的
 - ツールの存在を知る。そのツールで出来る事、出来ない事を知る
-
 
 このテキストでは**Lobe.ai**というツールを使います。
 
@@ -210,16 +238,19 @@ Lobe.ai は、画像のアノテーション(ラベリング)と、学習の実�
 - Lobe.ai のインストール
 - Computer Vision モデルの作成
 
-
 > [!IMPORTANT]
-> **手順 4 テスト** まで行ってください。その先の5以降を行う必要はありません!
+> **手順 4 テスト** まで行ってください。その先の**5以降を行う必要はありません!**
 
+Blog Post:
 
 https://qiita.com/dahatake/items/05efc18eaf03605cb7d0
 
+
 ## Task:
-- Computer Vision の主な処理には分類 (Image Classification)以外に何がありますか?
-- Computer Vision の学習をする前に行うタスクは何ですか? それは、どこまで自動化が出来そうですか?
+- 幾つかの画像をインターネットで検索して、テストをしてみてください。
+- Computer Vision の主な処理には`分類 (Image Classification)` **以外** には何がありますか?
+- Computer Vision の学習をする**前**に行うタスクは何ですか? それは、どこまで自動化が出来そうですか?
+
 
 # 3. AutoML
 
