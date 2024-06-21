@@ -108,24 +108,6 @@ conda config --add channels pytorch
 conda env create -f mnist.yml
 ```
 
----------------------------------
-
-
-- Anaconda Navigator を起動します
-    - Sing in/Sing up はしなくていいです
-- [Environment] に移動して、[Import] を選択します。
-- Import Environment 画面で、各項目を設定します。
-
-
-| 項目名 | 設定値 | 内容 |
-| --- | --- | --- |
-| local drive | mnist.yml のファイルパス | 環境ファイルを選択します |
-| New environment name | mnist | 環境名を入力します |
-
-![import-environment](/images/anaconda-import-environment.jpg)
-
-
-
 ### 0.3.2. (オプション) Jupyter Notebook のインストール
 
 Anaconda Navigator の [Home] で、Jupyter Notebook が表示されていない場合は、インストールを行います。表示されている方は、スキップして、1 へ進んでください。
