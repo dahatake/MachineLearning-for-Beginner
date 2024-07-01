@@ -11,7 +11,7 @@
 
 2. Computer Vision 
 
-ツールを使って `Image Classification` を行います。主に、アノテーション(ラベリング)と、学習の実行を行います。
+ツールを使って `Image Classification` を行います。主に、アノテーション(ラベリング)と、学習の実行を行います。推論は行いません。
 
 # 対象者
 - 一般的なPythonのプログラミングの基本コースを終了した方。あるいは何らかのプログラミング経験者
@@ -26,12 +26,17 @@
 
 # 0. 環境構築
 
-機械学習のソフトウェア開発に必要な環境を整備します。既にインストールが終わっていたり、
+機械学習のモデル開発に必要な環境を整備します。
 
 以下のアプリケーションをインストールします。
 - Anaconda
     - Pythonの複数の環境の分離を行うために使います
     - インストール時にPythonがインストールされていないと、Pythonもインストールされます
+
+Anacondaを使うのは、関連モジュールのバージョンの整合性を保つためです。このテキストのコードはPythonを使用しますが、Pythonのモジュールは、個々に開発が行われているため、特定のモジュールのバージョンを上げる事で不整合が起こる事があります。
+Anacondaは、そのような問題を解決するために、モジュールのバージョンを管理するためのツールです。Anacondaでは、「環境」(Environment)という概念があって、作業する環境毎に異なるバージョンのモジュールを使う事が出来ます。そして、Anaconda経由でモジュールをインストールする事で、その環境に合わせたバージョンのモジュールをインストールする事が出来ます。
+
+他にも似た事をするツールはvenvなど幾つかあります。
 
 ## 0.1 作業フォルダの作成
 
@@ -46,26 +51,29 @@ C:\Work
 
 ## 0.2. このワークショップで使うファイルのダウンロード
 
-クローンとはダウンロードとほぼ同じ意味です。厳密には勿論異なるのですが、今の段階ではあまり気にしなくてよいです。
+クローンとダウンロードとほぼ同じ意味です。厳密には勿論、異なるのですが、今の段階ではあまり気にしなくてよいです。
 
 クローンをする場合は、Gitというツールを使って、GitHubなどにあるファイルの複製を、自分のPCあるいはMacにダウンロードして構成します。クローンをした場合は、その後のPCあるいはMacでの作業での変更点を、GitHubなどのクローン元に反映がしやすくなります。このテキストでは、大本のファイルを変更することはありません。
 
-幾つも方法はあります。
+方法は幾つかあります。
 
 - zip圧縮してダウンロード
 
+この演習では最もお勧めです。
+
 ![download-zip](/images/github-download-as-zip.jpg)
 
-zip圧縮のファイルは、展開してください。
+- zip圧縮のファイルは、展開してください。
 
+クローンをする場合は、以下の手順を実行します。
 - (自分のPCもしくはMacにGitがインストール済みの場合) git clone コマンドでクローン
 
 ```shell
 git clone https://github.com/dahatake/MachineLearning-for-Beginner.git
 ```
+その後:
 
-
-展開あるいはクローンしたファイルを、`作業フォルダ`にコピーします。
+- 展開あるいはクローンしたファイルを、`作業フォルダ`にコピーします。
 
 ## 0.3. Anaconda のインストール
 
@@ -82,7 +90,7 @@ https://www.anaconda.com/
 
 ### 0.3.1. Anaconda の環境 (Environment) の作成
 
-既存の Anaconda の`環境`ファイルを取り込んで、自分のPCあるいはMacに同じ環境を作成します。環境は、特定のプログラムを動かす際に必要となるパッケージ(ライブラリとも言います)を一度にダウンロードするなりして、動作実行を行える状態を指します。まさに動作**環境**ですね。
+既存の Anaconda の`環境`ファイルを取り込んで、自分のPCあるいはMacに同じ環境を作成します。環境は、特定のプログラムを動かす際に必要となるモジュール(ライブラリとも言います)を一度にダウンロードするなりして、動作実行を行える状態を指します。まさに動作**環境**ですね。
 
 環境ファイルは、このリポジトリの中にあります。**mnist.yml** です。
 
@@ -95,7 +103,7 @@ https://www.anaconda.com/
 cd C:\Work
 ```
 
-- 以下のコマンドを入力して、`Channel`を追加します。Anacondaでの多くのパッケージが、用意されている`defaults`のチャネル以外の`conda-forge`や `pytorch`にあります。
+- 以下のコマンドを入力して、`Channel`を追加します。Anacondaでの多くのモジュールが、用意されている`defaults`のチャネル以外の`conda-forge`や `pytorch`にあります。
 
 ```cmd
 conda config --add channels conda-forge
@@ -128,7 +136,7 @@ Anaconda Navigator の [Home] で、Jupyter Notebook が表示されていない
 
 ![search-notebook](/images/anaconda-install-notebook-check-notebook.jpg)
 
-- 依存関係などを調査した上で、関連するパッケージをインストールします。**Apply** を押します
+- 依存関係などを調査した上で、関連するモジュールをインストールします。**Apply** を押します
 
 ![apply-dependency](/images/anaconda-install-notebook-apply-related-packages.jpg)
 
@@ -314,3 +322,49 @@ https://learn.microsoft.com/ja-jp/azure/azure-resource-manager/management/resour
 https://learn.microsoft.com/ja-jp/azure/azure-resource-manager/management/azure-services-resource-providers?source=recommendations
 
 - Custom Vision Service は Cognitive Service (旧名) になっています
+
+# 4. 実行時のエラー対応策
+
+この後の演習で用意されたコードを実行します。よくあるエラーとその対応策を以下に記載します。
+
+## 4.1. `ModuleNotFoundError: No module named 'xxxx'`
+
+`ModuleNotFoundError: No module named 'xxxx'` というエラーが出た場合は、そのモジュールがインストールされていない事が考えられます。
+
+チャネルを追加する事で、そのモジュールをインストールする事が出来ます。
+
+- **Anaconda Navigator** を起動します
+- **Channels** を選択します
+- 以下のチャネルを追加します
+
+conda-forge
+pytorch
+
+[こちらの手順も再度ご確認ください: Anaconda の環境 (Environment) の作成](/README.md#031-anaconda-の環境-environment-の作成)
+
+`plot_digits_classification.ipynb` で使っているモジュール:
+
+- matplotlib
+- sklearn
+
+`mnist_pytorch.ipynb` で使っているモジュール:
+
+- torch
+- torchvision
+
+Anaconda の Environment に、そのモジュールがインストールされているかを確認します。
+
+- **Anaconda Navigator** を起動します
+- **Environments** を選択します
+- **mnist** などの Environment を選択します
+- **Installed** を選択します
+- 検索ボックスに、そのモジュール名を入力します
+
+検索結果、チェックが入っているとインストールされています。
+
+インストールされていない場合は、以下の手順でインストールを行います。
+
+- **Not installed** を選択します
+- 検索ボックスに、そのモジュール名を入力します
+- 必要モジュールをチェックします
+- 画面下部の**Apply** を押します
