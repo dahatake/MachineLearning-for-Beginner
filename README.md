@@ -149,11 +149,14 @@ Anaconda Navigator の [Home] で、Jupyter Notebook が表示されていない
 
 - **Anaconda Prompt** を起動します。
 - 以下のコマンドを入力して、設定ファイルを作成します。
+
 ```shell
 jupyter notebook --generate-config
 ```
 
-設定ファイルは、Windowsの場合は、以下の様な場所に出来ています。
+設定ファイルは、**jupyter_notebook_config.py**です。
+
+Windowsの場合は、以下の様な場所に出来ています。
 
 ```cmd
 C:\Users\<<ユーザーアカウント名>>\.jupyter
