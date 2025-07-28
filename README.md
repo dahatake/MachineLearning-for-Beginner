@@ -182,11 +182,11 @@ Jupyter Notebook が起動できるかを確認します。
 
 ![Jupyter Notebook run](/images/anaconda-run-notebook.jpg)
 
-# 2. 実行時のエラー対応策
+# 1.4. 実行時のエラー対応策
 
 この後の演習で用意されたコードを実行します。よくあるエラーとその対応策を以下に記載します。
 
-## 2.1. そもそも何のエラーなのか分からない場合
+## 1.4.1. そもそも何のエラーなのか分からない場合
 
 Microsoft Copilot (旧Bing Chat)が使える場合は、以下のPromptを実行します。
 
@@ -226,7 +226,7 @@ Prompt:
 問題解決の為の詳細な手順書も作成してください。
 ```
 
-## 2.2. `ModuleNotFoundError: No module named 'xxxx'`
+## 1.4.2. `ModuleNotFoundError: No module named 'xxxx'`
 
 `ModuleNotFoundError: No module named 'xxxx'` というエラーが出た場合は、そのモジュールがインストールされていない事が考えられます。
 
@@ -270,7 +270,7 @@ Anaconda の Environment に、そのモジュールがインストールされ�
 
 
 
-# 3. MNIST - 初めての機械学習モデルの作成
+# 2. MNIST - 初めての機械学習モデルの作成
 機械学習の入門として代表的なサンプルになります。
 
 機械学習でとてもよく使われている scikit-learn というライブラリを使って、MNIST というデータセットを使って、手書き数字の画像を分類します。
@@ -304,18 +304,19 @@ https://scikit-learn.org/stable/auto_examples/classification/plot_digits_classif
     - Neural Network のコードをどう修正すれば `Deep Neural Network` になるか調べてください
 - 作成したモデルがファイルに保存をされていません。保存するためにプログラムを修正します
 
-# 4. Deep Learning - Computer Vision
+# 3. Deep Learning - Computer Vision
 
 機械学習で画像を扱う処理を`Computer Vision` と称しています。
 
-PyTorch でも実装できます。ですが、ここではツールを使って学習までの一連の流れを体験します。
+PyTorch でも実装できます。ですが、ここでは**ツール**を使って学習までの一連の流れを体験します。
 
 ## 目的
 - ツールの存在を知る。そのツールで出来る事、出来ない事を知る
 
 このテキストでは**Lobe.ai**というツールを使います。
 
-https://www.lobe.ai/
+https://github.com/lobe/lobe
+
 
 Lobe.ai は、画像のアノテーション(ラベリング)と、学習の実行を行うツールです。無料で利用することが出来ます。
 
