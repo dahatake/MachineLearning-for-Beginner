@@ -320,6 +320,10 @@ https://github.com/lobe/lobe
 
 Lobe.ai は、画像のアノテーション(ラベリング)と、学習の実行を行うツールです。無料で利用することが出来ます。
 
+画像ファイル:
+
+https://aka.ms/animal-images
+
 こちらの Blog post を参考に以下を行います。
 
 - Lobe.ai のインストール
