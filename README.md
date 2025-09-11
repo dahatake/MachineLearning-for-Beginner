@@ -77,6 +77,18 @@ git clone https://github.com/dahatake/MachineLearning-for-Beginner.git
 その後:
 
 - 展開あるいはクローンしたファイルを、`作業フォルダ`にコピーします。
+- 作業フォルダ中は、以下の様な構成になっています。**例示しているだけ**なので、まったく同じではなくてよいです!
+
+
+```text
+C:\Work   --- ここは別でもいいです
+   |---MachineLearning-for-Beginner --- ディレクトリ
+        |--- mnist --- ディレクトリ
+        |       |--- plot_digits_classification.ipynb --- SVCでのモデル作成
+        |       |--- mnist_pytorch.ipynb --- CNNでのモデル作成
+        | --- images  --- 画像ファイル
+        |--- README.md  --- このファイル
+```
 
 ## 1.3. Anaconda のインストール
 
@@ -99,11 +111,11 @@ https://www.anaconda.com/
 
 このテキストでは Anaconda の Environment 名を **mnist** としています。
 
-- **Anaconda Prompt** を起動します。
+- OSのスタートメニューにある**Anaconda Prompt** を起動します。
 - 作業フォルダまで移動します。以下は例です。自分の環境に合わせて変更してください。
 
 ```cmd
-cd C:\Work
+cd C:\Work\MachineLearning-for-Beginner\
 ```
 
 - 以下のコマンドを入力して、`Channel`を追加します。Anacondaでの多くのモジュールが、用意されている`defaults`のチャネル以外の`conda-forge`や `pytorch`にあります。
@@ -124,7 +136,7 @@ conda env create -f mnist.yml
 
 ### 1.3.2. (オプション) Jupyter Notebook のインストール
 
-Anaconda Navigator の [Home] で、Jupyter Notebook が表示されていない場合は、インストールを行います。
+Anaconda Navigator の [Home] で、Jupyter Notebook が表示されていない場合は、インストールを行います。表示されている場合は、このセクションはスキップしてください。
 
 - [Environments] に移動します。
 - 先ほど作成した Environment を選択します。ここでは、**mnist** です。
@@ -182,11 +194,17 @@ Jupyter Notebook が起動できるかを確認します。
 
 ![Jupyter Notebook run](/images/anaconda-run-notebook.jpg)
 
-# 1.4. 実行時のエラー対応策
+## 1.4. Lobe.ai のインストール
+
+以下のサイトからインストーラーをダウンロードして、インストールを行います。
+
+https://github.com/julienheinen/lobeAI/releases/tag/Applications
+
+# 1.5. 実行時のエラー対応策
 
 この後の演習で用意されたコードを実行します。よくあるエラーとその対応策を以下に記載します。
 
-## 1.4.1. そもそも何のエラーなのか分からない場合
+## 1.5.1. そもそも何のエラーなのか分からない場合
 
 Microsoft Copilot (旧Bing Chat)が使える場合は、以下のPromptを実行します。
 
@@ -226,7 +244,7 @@ Prompt:
 問題解決の為の詳細な手順書も作成してください。
 ```
 
-## 1.4.2. `ModuleNotFoundError: No module named 'xxxx'`
+## 1.5.2. `ModuleNotFoundError: No module named 'xxxx'`
 
 `ModuleNotFoundError: No module named 'xxxx'` というエラーが出た場合は、そのモジュールがインストールされていない事が考えられます。
 
