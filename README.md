@@ -13,8 +13,8 @@
 
 ツールを使って `Image Classification` を行います。主に、アノテーション(ラベリング)と、学習の実行を行います。推論は行いません。
 
-AutoMLについて触れていますが、それにはSoftware Engineeringの方向けである、Microsoft Azure など環境が別途必要です。
-そのため、オプションとして記載しています。
+> [!NOTE]
+> AutoMLについて触れていますが、それにはSoftware Engineeringの方向けである、Microsoft Azure など環境が別途必要です。そのため、**オプション**として記載しています。
 
 # 対象者
 - 一般的なPythonのプログラミングの基本コースを終了した方。あるいは何らかのプログラミング経験者
@@ -24,6 +24,7 @@ AutoMLについて触れていますが、それにはSoftware Engineeringの方
 
 # 利用ツール
 
+- Anaconda
 - Jupyter Notebook
 - Lobe.ai
 
@@ -35,6 +36,10 @@ AutoMLについて触れていますが、それにはSoftware Engineeringの方
 - Anaconda
     - Pythonの複数の環境の分離を行うために使います
     - インストール時にPythonがインストールされていないと、Pythonもインストールされます
+
+ダウンロード元:
+
+https://www.anaconda.com/download
 
 Anacondaを使うのは、関連モジュールのバージョンの整合性を保つためです。このテキストのコードはPythonを使用しますが、Pythonのモジュールは、個々に開発が行われているため、特定のモジュールのバージョンを上げる事で不整合が起こる事があります。
 Anacondaは、そのような問題を解決するために、モジュールのバージョンを管理するためのツールです。Anacondaでは、「環境」(Environment)という概念があって、作業する環境毎に異なるバージョンのモジュールを使う事が出来ます。そして、Anaconda経由でモジュールをインストールする事で、その環境に合わせたバージョンのモジュールをインストールする事が出来ます。
@@ -49,7 +54,8 @@ Anacondaは、そのような問題を解決するために、モジュールの
 C:\Work
 ```
 
-このテキストでは、`作業フォルダ`を **C:\Work** とします。他の場所に作成した場合は、適宜読み替えてください。
+> [!NOTE]
+> このテキストでは、`作業フォルダ`を **C:\Work** とします。他の場所に作成した場合は、適宜読み替えてください。
 
 
 ## 1.2. このワークショップで使うファイルのダウンロード
@@ -95,7 +101,8 @@ C:\Work   --- ここは別でもいいです
 自分のPCあるいはMacにインストールがされていない場合はインストールを行ってください。
 以下の公式サイトから**無料版 | Free** をダウンロードして、インストールします。
 
-ダウンロード画面にメールアドレスでの登録を促して `Registration`の項目がありす。ここでは、**スキップ**しても構いません。
+> [!NOTE]
+> ダウンロード画面にメールアドレスでの登録を促して `Registration`の項目がありす。ここでは、**スキップ**しても構いません。
 
 ![anaconda-download](/images/anaconda-skip-registration.jpg)
 
@@ -112,6 +119,11 @@ https://www.anaconda.com/
 このテキストでは Anaconda の Environment 名を **mnist** としています。
 
 - OSのスタートメニューにある**Anaconda Prompt** を起動します。
+
+
+> [!CAUTION]
+> OSのターミナルやコマンドプロンプトではありません。
+
 - 作業フォルダまで移動します。以下は例です。自分の環境に合わせて変更してください。
 
 ```cmd
@@ -136,6 +148,9 @@ conda env create -f mnist.yml
 
 ### 1.3.2. (オプション) Jupyter Notebook のインストール
 
+> [!NOTE]
+> この作業は必須ではありません。ですが、演習を実施する上で、設定を行う事を強く推奨します。
+
 Anaconda Navigator の [Home] で、Jupyter Notebook が表示されていない場合は、インストールを行います。表示されている場合は、このセクションはスキップしてください。
 
 - [Environments] に移動します。
@@ -156,6 +171,10 @@ Anaconda Navigator の [Home] で、Jupyter Notebook が表示されていない
 ![apply-dependency](/images/anaconda-install-notebook-apply-related-packages.jpg)
 
 ### 1.3.3. Jupyter Notebook の作業フォルダの変更
+
+> [!NOTE]
+> この作業は必須ではありません。ですが、演習を実施する上で、設定を行う事を強く推奨します。
+
 
 初期設定ですと、Jupyter Notebook は、ユーザーの**ホームディレクトリ**に作成されます。作業フォルダを変更するには、以下の手順を実行します:
 
@@ -333,12 +352,17 @@ PyTorch でも実装できます。ですが、ここでは**ツール**を使�
 
 このテキストでは**Lobe.ai**というツールを使います。
 
-https://github.com/lobe/lobe
-
-
 Lobe.ai は、画像のアノテーション(ラベリング)と、学習の実行を行うツールです。無料で利用することが出来ます。
 
-画像ファイル:
+https://github.com/lobe/lobe
+
+> [!IMPORTANT]
+> 上記サイトからアプリケーションのインストーラーへのリンクが無くなっています。
+> こちらのサイトに、一時的にインストーラーを置いてありますので、自己責任で利用してください。
+
+https://github.com/julienheinen/lobeAI/releases
+
+学習用の画像ファイル:
 
 https://aka.ms/animal-images
 
@@ -362,6 +386,10 @@ https://qiita.com/dahatake/items/05efc18eaf03605cb7d0
 
 
 # (オプション 1) AutoML
+
+> [!WARNING]
+> この先は、通常の演習では行いません。機械学習そのものに興味がある方向けです。
+
 
 金融機関での普通預金から定期預金になったというオープンデータを用いて、その予測のモデルを作成します。**分類**のタスクを行います。
 ここでは、Python のコードは記載しません。Azure Machine Learning Studio の画面の中だけで、AutoML (自動機械学習) を実行します。
