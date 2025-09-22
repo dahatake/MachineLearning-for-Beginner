@@ -149,7 +149,7 @@ conda env create -f mnist.yml
 ### 1.3.2. (オプション) Jupyter Notebook のインストール
 
 > [!NOTE]
-> この作業は必須ではありません。ですが、演習を実施する上で、設定を行う事を強く推奨します。
+> 自分のPCあるいはMacにJuputer Notebookがインストールされていない場合は、必ずこの作業を行ってください。
 
 Anaconda Navigator の [Home] で、Jupyter Notebook が表示されていない場合は、インストールを行います。表示されている場合は、このセクションはスキップしてください。
 
@@ -179,6 +179,14 @@ Anaconda Navigator の [Home] で、Jupyter Notebook が表示されていない
 初期設定ですと、Jupyter Notebook は、ユーザーの**ホームディレクトリ**に作成されます。作業フォルダを変更するには、以下の手順を実行します:
 
 - **Anaconda Prompt** を起動します。
+
+
+`環境`を`mnist`に変更します。
+
+```shell
+conda activate mnist
+```
+
 - 以下のコマンドを入力して、設定ファイルを作成します。
 
 ```shell
@@ -208,16 +216,32 @@ c.ServerApp.root_dir = r'C:/Work'
 
 Jupyter Notebook が起動できるかを確認します。
 
+- [Anaconda Navigator]を起動します。
+
+- [Environments] に移動します。
+
 - [Environment] - [mnist] を選択します
 - 三角のアイコンをクリックして、**Open with Jupyter Notebook** を選択します
 
 ![Jupyter Notebook run](/images/anaconda-run-notebook.jpg)
 
+
+以下の画面の様に、作業フォルダーの内容が表示されていれば設定完了です。この画面では`C:\Work`が作業フォルダーになります。
+
+![Jupyter Notebook open](/images/jupyternotebook-open-workfolder.jpg)
+
+
 ## 1.4. Lobe.ai のインストール
 
 以下のサイトからインストーラーをダウンロードして、インストールを行います。
 
-https://github.com/julienheinen/lobeAI/releases/tag/Applications
+~~https://github.com/lobe/lobe~~
+
+> [!IMPORTANT]
+> 公式サイトからアプリケーションのインストーラーへのリンクが無くなっています。
+> こちらのサイトに、一時的にインストーラーを置いてありますので、自己責任で利用してください。
+
+https://github.com/julienheinen/lobeAI/releases
 
 # 1.5. 実行時のエラー対応策
 
@@ -333,13 +357,24 @@ https://scikit-learn.org/stable/auto_examples/classification/plot_digits_classif
 - 機械学習の学習のプログラムの概要を理解する
 
 ## Task:
-- `plot_digits_classification.ipynb` を開いて、実行してみてください
+- Anaconda Navigator から、 Jupyter Notebookを起動します。
+- `plot_digits_classification.ipynb` を開いて、セルを一つずつ、実行します
     - MNIST の写真の一部をみて、どんなデータセットなのかを理解する
     - プログラムの構造をリスト化します。どこで何をしているのか?
-- `mnist_pytorch.ipynb` を開いて、実行してみてください
+- `mnist_pytorch.ipynb` を開いて、セルを一つずつ、実行します
     - アルゴリズムが`SVC`と`Neural Network`の2つあります。それぞれの違いを調べてください
     - Neural Network のコードをどう修正すれば `Deep Neural Network` になるか調べてください
 - 作成したモデルがファイルに保存をされていません。保存するためにプログラムを修正します
+
+> [!TIP]
+> Pythonのプログラムのコードの内容が不明瞭な場合は。CopilotやChatGPTに質問をしてみてください。例えば、以下の様なPromptです。
+
+Prompt:
+```cmd
+私はPythonの初心者です。以下のコードで行っている内容を、具体的かつ明瞭かつ丁寧に説明してください。
+
+<python のコードをここに貼り付け>
+```
 
 # 3. Deep Learning - Computer Vision
 
@@ -351,25 +386,25 @@ PyTorch でも実装できます。ですが、ここでは**ツール**を使�
 - ツールの存在を知る。そのツールで出来る事、出来ない事を知る
 
 このテキストでは**Lobe.ai**というツールを使います。
-
-Lobe.ai は、画像のアノテーション(ラベリング)と、学習の実行を行うツールです。無料で利用することが出来ます。
-
 https://github.com/lobe/lobe
 
-> [!IMPORTANT]
-> 上記サイトからアプリケーションのインストーラーへのリンクが無くなっています。
-> こちらのサイトに、一時的にインストーラーを置いてありますので、自己責任で利用してください。
-
-https://github.com/julienheinen/lobeAI/releases
+Lobe.ai は、画像のアノテーション(ラベリング)と、学習の実行を行うツールです。無料で利用することが出来ます。
 
 学習用の画像ファイル:
 
 https://aka.ms/animal-images
 
+> [!IMPORTANT]
+> ファイルをダウンロードしたら、`C:\Work\images` に展開してください。**日本語のフォルダー名は避けてください**。画像ファイルのインポート時にエラーになる場合があります。
+
 こちらの Blog post を参考に以下を行います。
 
 - Lobe.ai のインストール
 - Computer Vision モデルの作成
+  - ダウンロードしたフォルダーのインポート
+  - 任意の画像ファイルでの、モデルのテスト。画像ファイルが手元にない場合は、以下のファイルをダウンロードしてテストします。
+
+    https://aka.ms/giraffe
 
 > [!IMPORTANT]
 > **手順 4 テスト** まで行ってください。その先の**5以降を行う必要はありません!**
@@ -380,7 +415,7 @@ https://qiita.com/dahatake/items/05efc18eaf03605cb7d0
 
 
 ## Task:
-- 幾つかの画像をインターネットで検索して、テストをしてみてください。
+- 自分の手元の画像など**任意の画像**で、画像分類を行ってください。
 - Computer Vision の主な処理には`分類 (Image Classification)` **以外** には何がありますか?
 - Computer Vision の学習をする**前**に行うタスクは何ですか? それは、どこまで自動化が出来そうですか?
 
