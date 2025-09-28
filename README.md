@@ -143,6 +143,17 @@ conda config --add channels pytorch
 conda env create -f mnist.yml
 ```
 
+mnist.ymlで指定しているパッケージが、Windowsで動作確認をしているため、Macで動作しない可能性があります。
+
+scikit-learn のインストールでエラーが出る場合は、以下のサイトを参考にして、手動でインストールを行ってください。
+
+https://scikit-learn.org/stable/install.html
+
+また、PyTorch のインストールでエラーが出る場合は、以下のサイトを参考にして、手動でインストールを行ってください。
+
+https://github.com/pytorch/examples/tree/main/mnist
+
+
 ### 1.3.2. (オプション) Jupyter Notebook のインストール
 
 > [!NOTE]
@@ -166,6 +177,11 @@ Anaconda Navigator の [Home] で、Jupyter Notebook が表示されていない
 - Anacondaは、依存関係などを自動的に調査した上で、関連するモジュールをインストールします。**Apply** を押します
 
 ![apply-dependency](/images/anaconda-install-notebook-apply-related-packages.jpg)
+
+何らかの理由でインストールがうまくいかない場合は、公式サイトからダウンロードしてください。
+
+https://anaconda.org/anaconda/jupyter
+
 
 ### 1.3.3. Jupyter Notebook の作業フォルダの変更
 
@@ -233,6 +249,10 @@ Jupyter Notebook が起動できるかを確認します。
 以下のサイトからインストーラーをダウンロードして、インストールを行います。
 
 ~~https://github.com/lobe/lobe~~
+
+> [!IMPORTANT]
+
+自分のPCあるいはMacのCPUがAVXという命令セットに対応していないと、Lobeのインストールが出来ません。
 
 > [!IMPORTANT]
 > 公式サイトからアプリケーションのインストーラーへのリンクが無くなっています。
