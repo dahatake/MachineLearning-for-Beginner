@@ -60,13 +60,7 @@ C:\Work
 
 ## 1.2. このワークショップで使うファイルのダウンロード
 
-クローンとダウンロードとほぼ同じ意味です。厳密には勿論、異なるのですが、今の段階ではあまり気にしなくてよいです。
-
-クローンをする場合は、Gitというツールを使って、GitHubなどにあるファイルの複製を、自分のPCあるいはMacにダウンロードして構成します。クローンをした場合は、その後のPCあるいはMacでの作業での変更点を、GitHubなどのクローン元に反映がしやすくなります。このテキストでは、大本のファイルを変更することはありません。
-
-方法は幾つかあります。
-
-- zip圧縮してダウンロード
+複数のファイルを1つのZipファイルに圧縮してダウンロードします。
 
 この演習では最もお勧めです。
 
@@ -74,13 +68,16 @@ C:\Work
 
 - zip圧縮のファイルは、展開してください。
 
-クローンをする場合は、以下の手順を実行します。
-- (自分のPCもしくはMacにGitがインストール済みの場合) git clone コマンドでクローン
+> [!Tips]
+> **クローン**は、ダウンロードとほぼ同じ意味です。厳密には勿論、異なるのですが、今の段階ではあまり気にしなくてよいです。
+> クローンをする場合は、Gitというツールを使って、GitHubなどにあるファイルの複製を、自分のPCあるいはMacにダウンロードして構成します。クローンをした場合は、その後のPCあるいはMacでの作業での変更点を、GitHubなどのクローン元に反映がしやすくなります。このテキストでは、大本のファイルを変更することはありません。
+> クローンをする場合は、以下の手順を実行します。
+> - (自分のPCもしくはMacにGitがインストール済みの場合) git clone コマンドでクローンします。
+> ```shell
+> git clone https://github.com/dahatake/MachineLearning-for-Beginner.git
+> ```
 
-```shell
-git clone https://github.com/dahatake/MachineLearning-for-Beginner.git
-```
-その後:
+ファイルをダウンロードした後は、ファイルの内容を展開します。
 
 - 展開あるいはクローンしたファイルを、`作業フォルダ`にコピーします。
 - 作業フォルダ中は、以下の様な構成になっています。**例示しているだけ**なので、まったく同じではなくてよいです!
@@ -166,7 +163,7 @@ Anaconda Navigator の [Home] で、Jupyter Notebook が表示されていない
 
 ![search-notebook](/images/anaconda-install-notebook-check-notebook.jpg)
 
-- 依存関係などを調査した上で、関連するモジュールをインストールします。**Apply** を押します
+- Anacondaは、依存関係などを自動的に調査した上で、関連するモジュールをインストールします。**Apply** を押します
 
 ![apply-dependency](/images/anaconda-install-notebook-apply-related-packages.jpg)
 
@@ -249,7 +246,7 @@ https://github.com/julienheinen/lobeAI/releases
 
 ## 1.5.1. そもそも何のエラーなのか分からない場合
 
-Microsoft Copilot (旧Bing Chat)が使える場合は、以下のPromptを実行します。
+Microsoft Copilot が使える場合は、以下のPromptを実行します。
 
 ***注意***
 - 結果が100%正しいとは限りません。情報元のWebサイトを確認してください。また、それでも自身が無い場合には、専門とする方に相談してください。
@@ -265,7 +262,7 @@ Pythonのコードを実行したのですが、以下のエラーメッセー�
 ModuleNotFoundError: No module named 'matplotlib'
 ```
 
-ちなみに、このPromptの応用範囲は広く、様々なケースでガイダンスとして使えます。問題解決そのものをなってくれるわけではありませんが。
+ちなみに、このPromptの応用範囲は広く、様々なケースでガイダンスとして使えます。
 
 例1: 建築現場での材料の破壊
 
@@ -297,10 +294,11 @@ Prompt:
 - **Channels** を選択します
 - 以下のチャネルを追加します
 
-conda-forge
-pytorch
+> conda-forge
 
-[こちらの手順も再度ご確認ください: Anaconda の環境 (Environment) の作成](/README.md#031-anaconda-の環境-environment-の作成)
+> pytorch
+
+[こちらの手順も再度ご確認ください: Anaconda の環境 (Environment) の作成](/README.md#131-anaconda-の環境-environment-の作成)
 
 `plot_digits_classification.ipynb` で使っているモジュール:
 
@@ -334,14 +332,14 @@ Anaconda の Environment に、そのモジュールがインストールされ�
 # 2. MNIST - 初めての機械学習モデルの作成
 機械学習の入門として代表的なサンプルになります。
 
-機械学習でとてもよく使われている scikit-learn というライブラリを使って、MNIST というデータセットを使って、手書き数字の画像を分類します。
+機械学習でとてもよく使われている scikit-learn というライブラリを使い、MNIST というデータセットを学習用に用いて、手書き数字の画像を分類するモデルを作成します。
 
 ファイルの説明
 
 ```cmd
 mnist --- ディレクトリ
         |--- plot_digits_classification.ipynb --- SVCでのモデル作成
-        |--- mnist_pytorch.ipynb --- CNNでのモデル作成
+        |--- mnist_pytorch.ipynb              --- CNNでのモデル作成
 ```
 
 このサンプルコードは、sci-kit learn の公式サイトにあるものを使っています。
@@ -356,7 +354,7 @@ https://scikit-learn.org/stable/auto_examples/classification/plot_digits_classif
 - 自分の環境でモデルの作成を行う
 - 機械学習の学習のプログラムの概要を理解する
 
-## Task:
+## Task
 - Anaconda Navigator から、 Jupyter Notebookを起動します。
 - `plot_digits_classification.ipynb` を開いて、セルを一つずつ、実行します
     - MNIST の写真の一部をみて、どんなデータセットなのかを理解する
@@ -414,7 +412,7 @@ Blog Post:
 https://qiita.com/dahatake/items/05efc18eaf03605cb7d0
 
 
-## Task:
+## Task
 - 自分の手元の画像など**任意の画像**で、画像分類を行ってください。
 - Computer Vision の主な処理には`分類 (Image Classification)` **以外** には何がありますか?
 - Computer Vision の学習をする**前**に行うタスクは何ですか? それは、どこまで自動化が出来そうですか?
