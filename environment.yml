@@ -1,0 +1,22 @@
+# Cross-platform direct dependencies for the two notebooks in mnist/.
+# Versions are inherited from the repository's original Windows-specific mnist.yml.
+# Sources:
+# - Repository dependency snapshot: ./mnist.yml
+# - Conda environment files: https://docs.conda.io/projects/conda/en/stable/user-guide/tasks/manage-environments.html
+# - Conda channel priority: https://docs.conda.io/projects/conda/en/stable/user-guide/tasks/manage-channels.html
+# - PyTorch MNIST requirements: https://github.com/pytorch/examples/tree/main/mnist
+# - scikit-learn example: https://scikit-learn.org/stable/auto_examples/classification/plot_digits_classification.html
+name: mlfb-mnist
+channels:
+  - conda-forge
+  - pytorch
+  - nodefaults
+dependencies:
+  - python=3.12.3
+  - pytorch=2.3.1
+  - torchvision=0.18.1
+  - scikit-learn=1.5.0
+  - matplotlib=3.8.4
+  - notebook=7.2.0
+  - nbconvert=7.16.4
+  - ipykernel=6.29.3

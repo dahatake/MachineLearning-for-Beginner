@@ -88,6 +88,7 @@ C:\Work   --- ここは別でもいいです
    |---MachineLearning-for-Beginner --- ディレクトリ
         |--- mnist --- ディレクトリ
         |       |--- plot_digits_classification.ipynb --- SVCでのモデル作成
+        |       |--- plot_digits_predition.html       --- SVCでのブラウザー推論
         |       |--- mnist_pytorch.ipynb --- CNNでのモデル作成
         | --- images  --- 画像ファイル
         |--- README.md  --- このファイル
@@ -366,6 +367,9 @@ mnist --- ディレクトリ
 
 https://scikit-learn.org/stable/auto_examples/classification/plot_digits_classification.html
 
+> [!NOTE]
+> `plot_digits_classification.ipynb` が使うのは、scikit-learnに含まれる8×8画像のDigitsデータセットです。28×28画像のMNISTデータセットとは画像サイズが異なります。
+
 サンプルコードはこちらです。
 
 [plot_digits_classification.ipynb](mnist/plot_digits_classification.ipynb)
@@ -382,7 +386,7 @@ https://scikit-learn.org/stable/auto_examples/classification/plot_digits_classif
 - `mnist_pytorch.ipynb` を開いて、セルを一つずつ、実行します
     - アルゴリズムが`SVC`と`Neural Network`の2つあります。それぞれの違いを調べてください
     - Neural Network のコードをどう修正すれば `Deep Neural Network` になるか調べてください
-- 作成したモデルがファイルに保存をされていません。保存するためにプログラムを修正します
+- `plot_digits_classification.ipynb` の全コードセルを上から実行し、最後のセルが学習したSVCモデルと評価指標をブラウザー推論用HTMLへ保存することを確認します
 
 > [!TIP]
 > Pythonのプログラムのコードの内容が不明瞭な場合は。CopilotやChatGPTに質問をしてみてください。例えば、以下の様なPromptです。
@@ -393,6 +397,21 @@ Prompt:
 
 <python のコードをここに貼り付け>
 ```
+
+## ブラウザーで手書き数字を推論
+
+`plot_digits_classification.ipynb` の全コードセルを上から実行すると、最後のセルが学習済みSVCモデルを [`mnist/plot_digits_predition.html`](mnist/plot_digits_predition.html) 内へ保存します。
+
+1. `mnist/plot_digits_predition.html` をPCまたはMacのブラウザーで開きます。
+2. 左側の描画エリアへ、マウス、タッチ、またはペンで0から9の数字を1つ描きます。
+3. ストロークを離すと自動で推論され、右側に予測数字と統計情報が表示されます。
+4. 描き直す場合は **クリア** を選びます。
+
+このHTMLは、実行時にPython、Webサーバー、外部ネットワークを必要としません。描画は中央へ配置され、Notebookと同じ8×8・画素値0–16の64特徴へ変換されます。
+
+表示されるクラス別投票数とSVCの決定値は、**確率ではありません**。Notebookの `SVC(gamma=0.001)` は確率推定を有効にしていません。
+
+画面に「学習済みモデルを生成してください」と表示された場合は、案内に従ってNotebookの全コードセルを実行するか、[`SETUP.md`](SETUP.md) の全コード自動実行手順を実施してからHTMLを再読み込みしてください。
 
 # 3. Deep Learning - Computer Vision
 
