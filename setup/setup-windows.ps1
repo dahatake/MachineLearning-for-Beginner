@@ -72,10 +72,9 @@ function Read-Config {
     return $values
 }
 
-function Get-IsolatedPython {
-    param([hashtable]$Config)
-    $destination = Join-Path $env:USERPROFILE "python"
-    $python = Join-Path $destination "python.exe"
+function Install-Python {
+    param([hashtable]$Config, [string]$Destination)
+    $python = Join-Path $Destination "python.exe"
     if ($DryRun) {
         Write-Host "[dry-run] $python を Python $($Config["python_version"]) のインストーラーで作成します。"
         return $python
@@ -86,7 +85,7 @@ function Get-IsolatedPython {
     $installer = Join-Path ([IO.Path]::GetTempPath()) "python-$version-amd64.exe"
     $url = "https://www.python.org/ftp/python/$version/python-$version-amd64.exe"
     $expectedHash = $Config["python_windows_x64_sha256"]
-    Write-Host "テスト用 Python をダウンロード中: $url"
+    Write-Host "Python をダウンロード中: $url"
     Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $installer
     try {
         $actualHash = (Get-FileHash -LiteralPath $installer -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -94,8 +93,8 @@ function Get-IsolatedPython {
             throw "Python インストーラーの SHA-256 が一致しません。期待値: $expectedHash / 実測値: $actualHash"
         }
         $process = Start-Process -FilePath $installer -ArgumentList @(
-            "/quiet", "InstallAllUsers=0", "TargetDir=$destination", "PrependPath=0",
-            "Include_pip=1", "Include_test=0"
+            "/quiet", "InstallAllUsers=0", "TargetDir=$Destination", "PrependPath=0",
+            "Include_pip=1", "Include_test=0", "Shortcuts=0"
         ) -Wait -PassThru
         if ($process.ExitCode -ne 0) { throw "Python インストーラーが失敗しました。終了コード: $($process.ExitCode)" }
     }
@@ -103,9 +102,15 @@ function Get-IsolatedPython {
         Remove-Item -LiteralPath $installer -Force -ErrorAction SilentlyContinue
     }
     if (-not (Test-Path -LiteralPath $python -PathType Leaf)) {
-        throw "テスト用 Python が見つかりません: $python"
+        throw "インストール後に Python が見つかりません: $python"
     }
     return $python
+}
+
+function Get-IsolatedPython {
+    param([hashtable]$Config)
+    $destination = Join-Path $env:USERPROFILE "python"
+    return (Install-Python $Config $destination)
 }
 
 function Write-Step {
@@ -255,7 +260,9 @@ function Get-Python {
     }
     $python = Get-Command python.exe -ErrorAction SilentlyContinue
     if ($python -and $python.Source -notmatch 'WindowsApps') { return @($python.Source) }
-    throw "Python 3.10〜3.14 が見つかりません。venv モードには Python をインストールしてください。"
+    Write-Host "既存の Python（3.10〜3.14）が見つからないため、python.org から Python $($Config["python_version"]) をインストールします。"
+    $destination = Join-Path $env:LOCALAPPDATA "Programs\Python\Python312"
+    return (Install-Python $Config $destination)
 }
 
 function Invoke-VenvSetup {
