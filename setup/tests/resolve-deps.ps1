@@ -40,8 +40,7 @@ function Invoke-PipResolve {
         [string]$PythonVersion,
         [string]$Abi,
         [string[]]$BasePackages,
-        [string[]]$TorchPackages,
-        [string]$IndexUrl
+        [string[]]$TorchPackages
     )
 
     $destination = Join-Path $downloadRoot "$Platform-py$PythonVersion"
@@ -58,9 +57,6 @@ function Invoke-PipResolve {
         "-m", "pip", "download", "--dest", $destination, "--only-binary=:all:", "--no-deps", "--platform", $Platform,
         "--implementation", "cp", "--python-version", $PythonVersion, "--abi", $Abi
     )
-    if ($IndexUrl) {
-        $torchArguments += @("--index-url", $IndexUrl)
-    }
     $torchArguments += $TorchPackages
     & python @torchArguments
     if ($LASTEXITCODE -ne 0) { throw "pip wheel resolution failed for $Platform / Python $PythonVersion." }
@@ -76,12 +72,12 @@ try {
     }
 
     $pipTargets = @(
-        @{ Platform = "win_amd64"; PythonVersion = "310"; Abi = "cp310"; BasePackages = @("scikit-learn==1.5.0", "matplotlib==3.8.4", "notebook==7.2.0", "nbconvert==7.16.4", "ipykernel==6.29.3", "numpy<2"); TorchPackages = @("torch==2.3.1+cpu", "torchvision==0.18.1+cpu"); IndexUrl = "https://download.pytorch.org/whl/cpu" },
-        @{ Platform = "win_amd64"; PythonVersion = "312"; Abi = "cp312"; BasePackages = @("scikit-learn==1.5.0", "matplotlib==3.8.4", "notebook==7.2.0", "nbconvert==7.16.4", "ipykernel==6.29.3", "numpy<2"); TorchPackages = @("torch==2.3.1+cpu", "torchvision==0.18.1+cpu"); IndexUrl = "https://download.pytorch.org/whl/cpu" },
-        @{ Platform = "macosx_10_15_x86_64"; PythonVersion = "310"; Abi = "cp310"; BasePackages = @("scikit-learn==1.5.0", "matplotlib==3.8.4", "notebook==7.2.0", "nbconvert==7.16.4", "ipykernel==6.29.3", "numpy<2"); TorchPackages = @("torch==2.2.2", "torchvision==0.17.2"); IndexUrl = "" },
-        @{ Platform = "macosx_12_0_arm64"; PythonVersion = "312"; Abi = "cp312"; BasePackages = @("scikit-learn==1.5.0", "matplotlib==3.8.4", "notebook==7.2.0", "nbconvert==7.16.4", "ipykernel==6.29.3", "numpy<2"); TorchPackages = @("torch==2.3.1", "torchvision==0.18.1"); IndexUrl = "" },
-        @{ Platform = "manylinux_2_17_x86_64"; PythonVersion = "313"; Abi = "cp313"; BasePackages = @("scikit-learn==1.7.2", "matplotlib==3.10.7", "notebook==7.4.7", "nbconvert==7.16.6", "ipykernel==6.30.1", "numpy==2.2.6"); TorchPackages = @("torch==2.9.1+cpu", "torchvision==0.24.1+cpu"); IndexUrl = "https://download.pytorch.org/whl/cpu" },
-        @{ Platform = "manylinux_2_17_aarch64"; PythonVersion = "314"; Abi = "cp314"; BasePackages = @("scikit-learn==1.7.2", "matplotlib==3.10.7", "notebook==7.4.7", "nbconvert==7.16.6", "ipykernel==6.30.1", "numpy==2.2.6"); TorchPackages = @("torch==2.9.1", "torchvision==0.24.1"); IndexUrl = "" }
+        @{ Platform = "win_amd64"; PythonVersion = "310"; Abi = "cp310"; BasePackages = @("scikit-learn==1.5.0", "matplotlib==3.8.4", "notebook==7.2.0", "nbconvert==7.16.4", "ipykernel==6.29.3", "numpy<2"); TorchPackages = @("torch==2.3.1", "torchvision==0.18.1") },
+        @{ Platform = "win_amd64"; PythonVersion = "312"; Abi = "cp312"; BasePackages = @("scikit-learn==1.5.0", "matplotlib==3.8.4", "notebook==7.2.0", "nbconvert==7.16.4", "ipykernel==6.29.3", "numpy<2"); TorchPackages = @("torch==2.3.1", "torchvision==0.18.1") },
+        @{ Platform = "macosx_10_15_x86_64"; PythonVersion = "310"; Abi = "cp310"; BasePackages = @("scikit-learn==1.5.0", "matplotlib==3.8.4", "notebook==7.2.0", "nbconvert==7.16.4", "ipykernel==6.29.3", "numpy<2"); TorchPackages = @("torch==2.2.2", "torchvision==0.17.2") },
+        @{ Platform = "macosx_12_0_arm64"; PythonVersion = "312"; Abi = "cp312"; BasePackages = @("scikit-learn==1.5.0", "matplotlib==3.8.4", "notebook==7.2.0", "nbconvert==7.16.4", "ipykernel==6.29.3", "numpy<2"); TorchPackages = @("torch==2.3.1", "torchvision==0.18.1") },
+        @{ Platform = "manylinux_2_17_x86_64"; PythonVersion = "313"; Abi = "cp313"; BasePackages = @("scikit-learn==1.7.2", "matplotlib==3.10.7", "notebook==7.4.7", "nbconvert==7.16.6", "ipykernel==6.30.1", "numpy==2.2.6"); TorchPackages = @("torch==2.9.1", "torchvision==0.24.1") },
+        @{ Platform = "manylinux_2_17_aarch64"; PythonVersion = "314"; Abi = "cp314"; BasePackages = @("scikit-learn==1.7.2", "matplotlib==3.10.7", "notebook==7.4.7", "nbconvert==7.16.6", "ipykernel==6.30.1", "numpy==2.2.6"); TorchPackages = @("torch==2.9.1", "torchvision==0.24.1") }
     )
     foreach ($target in $pipTargets) {
         Invoke-PipResolve @target
