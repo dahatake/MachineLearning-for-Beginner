@@ -516,9 +516,9 @@
       <h3>セットアップとNotebook実行を自動化</h3>
       <p class="muted">リポジトリのルートで、OSに合う既存スクリプトを実行します。</p>
       <p><strong>Windows（PowerShell 7以降）</strong></p>
-      <div class="command-block">pwsh.exe -NoLogo -NoProfile -File .\setup.ps1 -RunNotebooks</div>
+      <div class="command-block">pwsh.exe -NoLogo -NoProfile -File .\setup\setup-windows.ps1 -RunNotebooks</div>
       <p><strong>macOS</strong></p>
-      <div class="command-block">bash ./setup.sh --run-notebooks</div>
+      <div class="command-block">bash ./setup/setup-mac.sh --run-notebooks</div>
 
       <button id="reload-button" class="button" type="button">実行後に再読み込み</button>
     </section>

@@ -2,7 +2,7 @@
 
 最終確認日: **2026-08-28**
 
-この文書は、リポジトリ直下の `setup.ps1`（Windows）または `setup.sh`（macOS）を使い、現在リポジトリに存在する全コードを実行する手順です。
+この文書は、`setup/setup-windows.ps1`（Windows）または `setup/setup-mac.sh`（macOS）を使い、現在リポジトリに存在する全コードを実行する手順です。
 
 ## 対象範囲
 
@@ -69,7 +69,7 @@ Windows 10 などで WinGet を利用できない場合は、同じ Microsoft �
 リポジトリのルートへ移動し、スクリプトと `environment.yml` の内容を確認してから実行します。
 
 ```powershell
-pwsh.exe -NoLogo -NoProfile -File .\setup.ps1
+pwsh.exe -NoLogo -NoProfile -File .\setup\setup-windows.ps1
 ```
 
 これにより環境構築、依存確認、MNIST データ準備まで行います。管理者権限は要求しません。Conda が無い場合の既定インストール先は `$HOME\Miniforge3` です。
@@ -77,13 +77,13 @@ pwsh.exe -NoLogo -NoProfile -File .\setup.ps1
 Miniforge 公式資料には Windows のインストール先で空白や特殊文字を避けるよう注意があります。[M1] 既定パスにそれらが含まれる場合、スクリプトは推測で別の場所へ導入せず停止します。書き込み可能な ASCII パスを明示して再実行してください。
 
 ```powershell
-pwsh.exe -NoLogo -NoProfile -File .\setup.ps1 -MiniforgePrefix 'D:\Miniforge3'
+pwsh.exe -NoLogo -NoProfile -File .\setup\setup-windows.ps1 -MiniforgePrefix 'D:\Miniforge3'
 ```
 
 ### 3. 全コードを自動実行
 
 ```powershell
-pwsh.exe -NoLogo -NoProfile -File .\setup.ps1 -RunNotebooks
+pwsh.exe -NoLogo -NoProfile -File .\setup\setup-windows.ps1 -RunNotebooks
 ```
 
 セットアップとデータ取得も同時に行うため、初回からこのコマンドだけを実行しても構いません。2 回目以降は既存環境と既存データを再利用します。[C1][T1]
@@ -93,19 +93,19 @@ pwsh.exe -NoLogo -NoProfile -File .\setup.ps1 -RunNotebooks
 既存 Conda の場所を明示する場合:
 
 ```powershell
-pwsh.exe -NoLogo -NoProfile -File .\setup.ps1 -CondaExecutable 'C:\path\to\conda.exe' -RunNotebooks
+pwsh.exe -NoLogo -NoProfile -File .\setup\setup-windows.ps1 -CondaExecutable 'C:\path\to\conda.exe' -RunNotebooks
 ```
 
 データの事前取得を省略する場合:
 
 ```powershell
-pwsh.exe -NoLogo -NoProfile -File .\setup.ps1 -SkipDataDownload
+pwsh.exe -NoLogo -NoProfile -File .\setup\setup-windows.ps1 -SkipDataDownload
 ```
 
 ダウンロードした ZIP から展開した場合など、実行ポリシーによりスクリプトだけがブロックされたときは、内容を確認した後に対象ファイルを `Unblock-File` で解除できます。これはポリシー全体を変更しません。[P2]
 
 ```powershell
-Unblock-File -LiteralPath .\setup.ps1
+Unblock-File -LiteralPath .\setup\setup-windows.ps1
 ```
 
 ## macOS の手順
@@ -115,7 +115,7 @@ Unblock-File -LiteralPath .\setup.ps1
 Terminal でリポジトリのルートへ移動し、スクリプトと `environment.yml` の内容を確認してから実行します。実行権限の付与は不要です。
 
 ```bash
-bash ./setup.sh
+bash ./setup/setup-mac.sh
 ```
 
 Conda が無い場合の既定インストール先は `${HOME}/miniforge3` です。Miniforge 公式の非対話インストール方式 `bash <installer> -b -p <prefix>` を使用し、シェル初期化ファイルは変更しません。[M1]
@@ -123,7 +123,7 @@ Conda が無い場合の既定インストール先は `${HOME}/miniforge3` で�
 ### 2. 全コードを自動実行
 
 ```bash
-bash ./setup.sh --run-notebooks
+bash ./setup/setup-mac.sh --run-notebooks
 ```
 
 初回からこのコマンドだけを実行しても構いません。
@@ -133,19 +133,19 @@ bash ./setup.sh --run-notebooks
 既存 Conda の場所を明示する場合:
 
 ```bash
-bash ./setup.sh --conda /path/to/conda --run-notebooks
+bash ./setup/setup-mac.sh --conda /path/to/conda --run-notebooks
 ```
 
 Miniforge の導入先を変える場合:
 
 ```bash
-bash ./setup.sh --miniforge-prefix "${HOME}/custom-miniforge"
+bash ./setup/setup-mac.sh --miniforge-prefix "${HOME}/custom-miniforge"
 ```
 
 データの事前取得を省略する場合:
 
 ```bash
-bash ./setup.sh --skip-data-download
+bash ./setup/setup-mac.sh --skip-data-download
 ```
 
 ## 実行結果
@@ -179,7 +179,7 @@ executed-notebooks/
 モデルが欠落または不正な場合、アプリは推論を開始せず、次の2つの復旧方法を画面に表示します。
 
 - `mnist/plot_digits_classification.ipynb` の全コードセルを上から実行する。
-- Windowsでは `setup.ps1 -RunNotebooks`、macOSでは `setup.sh --run-notebooks` を実行する。
+- Windowsでは `setup/setup-windows.ps1 -RunNotebooks`、macOSでは `setup/setup-mac.sh --run-notebooks` を実行する。
 
 完了後、HTMLを再読み込みしてください。静的HTMLからローカルのPowerShell、Bash、Jupyterを直接起動するボタンは設けていません。
 

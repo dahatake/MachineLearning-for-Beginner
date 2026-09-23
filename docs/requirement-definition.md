@@ -22,7 +22,7 @@
 - 学習データとテストデータは `test_size=0.5, shuffle=False` で分割される。
 - `executed-notebooks/mnist/plot_digits_classification.executed.ipynb` に保存された分類レポートと混同行列では、テスト899件中871件正解、精度約96.9%である。
 - 現在の分類器は確率推定を有効化していない。決定値や投票数を確率として表示してはならない。
-- `setup.ps1 -RunNotebooks` と `setup.sh --run-notebooks` は既存の Notebook 自動実行手段である。
+- `setup/setup-windows.ps1 -RunNotebooks` と `setup/setup-mac.sh --run-notebooks` は既存の Notebook 自動実行手段である。
 
 ## 3. スコープ
 
@@ -115,7 +115,7 @@ $$
 次のいずれか一方を実施するよう案内する。
 
 1. 対象 Notebook だけを実行する場合は、`mnist/plot_digits_classification.ipynb` を開き、全コードセルを上から実行する。
-2. リポジトリのセットアップとNotebook実行をまとめて自動化する場合は、Windowsでは既存の `setup.ps1 -RunNotebooks`、macOSでは既存の `setup.sh --run-notebooks` を実行する。
+2. リポジトリのセットアップとNotebook実行をまとめて自動化する場合は、Windowsでは既存の `setup/setup-windows.ps1 -RunNotebooks`、macOSでは既存の `setup/setup-mac.sh --run-notebooks` を実行する。
 
 どちらの場合も、完了後にHTMLを再読み込みする。
 
@@ -174,9 +174,9 @@ $$
 - `executed-notebooks/mnist/plot_digits_classification.executed.ipynb`
 - `README.md`
 - `SETUP.md`
-- `setup.ps1`
-- `setup.sh`
-- `environment.yml`
+- `setup/setup-windows.ps1`
+- `setup/setup-mac.sh`
+- `setup/envs/environment.yml`
 
 ### 公式資料
 
