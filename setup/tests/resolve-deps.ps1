@@ -14,13 +14,24 @@ function Invoke-CondaDryRun {
 
     Write-Host "Resolving conda environment for $Subdir"
     $previousSubdir = $env:CONDA_SUBDIR
+    $previousOsx = $env:CONDA_OVERRIDE_OSX
+    $previousGlibc = $env:CONDA_OVERRIDE_GLIBC
     try {
         $env:CONDA_SUBDIR = $Subdir
+        Remove-Item Env:CONDA_OVERRIDE_OSX -ErrorAction SilentlyContinue
+        Remove-Item Env:CONDA_OVERRIDE_GLIBC -ErrorAction SilentlyContinue
+        switch ($Subdir) {
+            "osx-64" { $env:CONDA_OVERRIDE_OSX = "12.0" }
+            "osx-arm64" { $env:CONDA_OVERRIDE_OSX = "11.0" }
+            { $_ -like "linux-*" } { $env:CONDA_OVERRIDE_GLIBC = "2.17" }
+        }
         & $CondaExe env create --dry-run --file $environmentFile --prefix (Join-Path $downloadRoot "conda-$Subdir")
         if ($LASTEXITCODE -ne 0) { throw "Conda resolution failed for $Subdir." }
     }
     finally {
         $env:CONDA_SUBDIR = $previousSubdir
+        $env:CONDA_OVERRIDE_OSX = $previousOsx
+        $env:CONDA_OVERRIDE_GLIBC = $previousGlibc
     }
 }
 
