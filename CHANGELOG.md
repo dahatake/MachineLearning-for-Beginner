@@ -27,5 +27,5 @@ scikit-learnのDigitsデータセットで学習したSVCを、PCまたはMacの
 
 - Conda の `defaults` チャンネルに対する利用規約（ToS）未同意が原因で、macOS/Linux 共通のセットアップ処理（`setup/lib/common.sh`）における環境の存在確認・作成・更新・削除の各操作が非対話環境で `CondaToSNonInteractiveError` により失敗していた問題を修正しました。`conda-forge` / `pytorch` チャンネルのみを使う一時 `condarc` をこれらの操作に一貫して適用し、`--dry-run` 時のプレビュー表示は従来どおり維持しました。
 - `setup/setup-windows.ps1` の venv モードで、既存の Python（3.10〜3.14）が見つからない場合にエラーで停止していた問題を修正しました。python.org の Python 3.12.10 インストーラーをダウンロード・SHA-256照合したうえで、`%LOCALAPPDATA%\Programs\Python\Python312` へユーザー単位（管理者権限不要）で自動的に導入するようにしました。
-- 上記のインストーラー起動処理で、Windows のユーザー名やインストール先パスに空白が含まれる環境（日本語ユーザー名など）において `TargetDir` オプションがコマンドライン上で分割され、インストールが失敗しうる問題を修正しました。
+- 上記のインストーラー起動処理で、インストール先パスに空白が含まれる環境（例: `C:\Users\John Doe\...`）において `TargetDir` オプションがコマンドライン上で分割され、インストールが失敗しうる問題を修正しました。
 - `setup/setup-windows.ps1` の venv モードで、PATH 上の `python.exe` を実際のバージョン確認なしに採用していたため、3.10〜3.14 の範囲外の Python が誤って使われうる問題を修正しました。実行時に `sys.version_info` を確認し、範囲外であれば python.org からの自動インストールにフォールバックするようにしました。
