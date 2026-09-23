@@ -560,6 +560,39 @@ mlfb_find_python() {
     return 1
 }
 
+mlfb_install_isolated_macos_python() {
+    [ "${MLFB_TEST_ISOLATE}" = "1" ] || return 0
+    [ "${MLFB_SETUP_OS}" = "macos" ] || return 0
+
+    version="$(mlfb_config_value python_version)"
+    installer_name="python-${version}-macos11.pkg"
+    python_path="/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12"
+    expected_sha="$(mlfb_config_value python_macos_universal2_sha256)"
+    url="https://www.python.org/ftp/python/${version}/${installer_name}"
+
+    if [ "${MLFB_DRY_RUN}" -eq 1 ]; then
+        mlfb_info "[dry-run] ${url} を ${python_path} へインストールします。"
+        printf '%s\n' "${python_path}"
+        return 0
+    fi
+    if [ -x "${python_path}" ] && mlfb_python_version_ok "${python_path}"; then
+        printf '%s\n' "${python_path}"
+        return 0
+    fi
+
+    mlfb_info "テスト隔離用の Python ${version} をインストールします。"
+    if [ -z "${MLFB_TEMP_DIR}" ]; then
+        MLFB_TEMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/mlfb-setup.XXXXXX")"
+    fi
+    installer="${MLFB_TEMP_DIR}/${installer_name}"
+    mlfb_download_file "${url}" "${installer}"
+    actual_sha="$(mlfb_sha256_file "${installer}")"
+    [ "${actual_sha}" = "${expected_sha}" ] || mlfb_die "Python インストーラーの SHA-256 が一致しません。期待値: ${expected_sha} / 実測値: ${actual_sha}"
+    mlfb_run_privileged "test Python installer" installer -pkg "${installer}" -target /
+    [ -x "${python_path}" ] || mlfb_die "テスト用 Python が見つかりません: ${python_path}"
+    printf '%s\n' "${python_path}"
+}
+
 mlfb_sudo_prefix() {
     if [ "$(id -u)" -eq 0 ]; then
         printf '%s\n' ""
@@ -619,7 +652,10 @@ mlfb_linux_install_venv_support() {
 
 mlfb_setup_venv_mode() {
     mlfb_step 3 "Python venv を作成しています" "5〜15 分"
-    python_cmd="$(mlfb_find_python || true)"
+    python_cmd="$(mlfb_install_isolated_macos_python || true)"
+    if [ -z "${python_cmd}" ]; then
+        python_cmd="$(mlfb_find_python || true)"
+    fi
     [ -n "${python_cmd}" ] || mlfb_die "Python 3.10〜3.14 が見つかりません。venv モードには Python が必要です。"
     mlfb_linux_install_venv_support "${python_cmd}"
 

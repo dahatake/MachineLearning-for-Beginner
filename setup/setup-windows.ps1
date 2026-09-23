@@ -67,6 +67,42 @@ function Read-Config {
     return $values
 }
 
+function Get-IsolatedPython {
+    param([hashtable]$Config)
+    $destination = Join-Path $env:USERPROFILE "python"
+    $python = Join-Path $destination "python.exe"
+    if ($DryRun) {
+        Write-Host "[dry-run] $python を Python $($Config["python_version"]) のインストーラーで作成します。"
+        return $python
+    }
+    if (Test-Path -LiteralPath $python -PathType Leaf) { return $python }
+
+    $version = $Config["python_version"]
+    $installer = Join-Path ([IO.Path]::GetTempPath()) "python-$version-amd64.exe"
+    $url = "https://www.python.org/ftp/python/$version/python-$version-amd64.exe"
+    $expectedHash = $Config["python_windows_x64_sha256"]
+    Write-Host "テスト用 Python をダウンロード中: $url"
+    Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $installer
+    try {
+        $actualHash = (Get-FileHash -LiteralPath $installer -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($actualHash -ne $expectedHash) {
+            throw "Python インストーラーの SHA-256 が一致しません。期待値: $expectedHash / 実測値: $actualHash"
+        }
+        $process = Start-Process -FilePath $installer -ArgumentList @(
+            "/quiet", "InstallAllUsers=0", "TargetDir=$destination", "PrependPath=0",
+            "Include_pip=1", "Include_test=0"
+        ) -Wait -PassThru
+        if ($process.ExitCode -ne 0) { throw "Python インストーラーが失敗しました。終了コード: $($process.ExitCode)" }
+    }
+    finally {
+        Remove-Item -LiteralPath $installer -Force -ErrorAction SilentlyContinue
+    }
+    if (-not (Test-Path -LiteralPath $python -PathType Leaf)) {
+        throw "テスト用 Python が見つかりません: $python"
+    }
+    return $python
+}
+
 function Write-Step {
     param([int]$Number, [string]$Message, [string]$Estimate)
     Write-Host ("[{0}/7] {1}（{2}）" -f $Number, $Message, $Estimate)
@@ -181,6 +217,8 @@ function Invoke-CondaSetup {
 }
 
 function Get-Python {
+    param([hashtable]$Config)
+    if ($TestIsolate) { return (Get-IsolatedPython $Config) }
     $py = Get-Command py.exe -ErrorAction SilentlyContinue
     if ($py) {
         & $py.Source -3.12 -c "import sys" 2>$null
@@ -192,8 +230,9 @@ function Get-Python {
 }
 
 function Invoke-VenvSetup {
+    param([hashtable]$Config)
     Write-Step 3 "Python 仮想環境を作成しています" "5〜15 分"
-    $python = Get-Python
+    $python = Get-Python $Config
     $venv = Join-Path $RepositoryRoot ".venv"
     $py = Get-Command py.exe -ErrorAction SilentlyContinue
     if ($py -and $python -eq $py.Source) {
@@ -257,7 +296,7 @@ try {
     $config = Read-Config
     $modes = if ($Mode -eq "all") { @("anaconda", "miniconda", "venv") } else { @($Mode) }
     foreach ($selected in $modes) {
-        $python = if ($selected -eq "venv") { Invoke-VenvSetup } else { Invoke-CondaSetup $selected $config }
+        $python = if ($selected -eq "venv") { Invoke-VenvSetup $config } else { Invoke-CondaSetup $selected $config }
         Write-Step 5 "環境を検証しています" "1 分"
         if (-not $DryRun) {
             if ($selected -eq "venv") {
