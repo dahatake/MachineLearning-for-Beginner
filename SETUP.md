@@ -28,7 +28,7 @@ Windows ARM64 は、採用した Miniforge リリースにネイティブ Window
 
 Miniforge 公式資料では Apple Silicon ビルドを experimental と注記しています。本スクリプトは公式 arm64 インストーラーと arm64 Conda パッケージを使用しますが、この留保も適用されます。[M1]
 
-GPU は必須ではありません。PyTorch Notebook は CUDA、MPS、CPU の順で利用可否を判定し、アクセラレーターが無ければ CPU を使用します。[R3] `environment.yml` は元の `mnist.yml` と同じ PyTorch 2.3.1／torchvision 0.18.1 を指定しています。[R4]
+GPU は必須ではありません。PyTorch Notebook は CUDA、MPS、CPU の順で利用可否を判定し、アクセラレーターが無ければ CPU を使用します。[R3] `environment.yml` は元の `mnist.yml` を基にしつつ、Linux の executable-stack 互換性修正を含む conda-forge build を明示指定するため、PyTorch 2.5.1／torchvision 0.20.1 を指定しています。[R4][T3][T4]
 
 ## スクリプトが行うこと
 
@@ -36,7 +36,7 @@ GPU は必須ではありません。PyTorch Notebook は CUDA、MPS、CPU の�
 2. Conda が無い場合だけ、固定した **Miniforge 26.5.3-0** をユーザー領域へ非対話インストールします。[M1][M2]
 3. ダウンロードした Miniforge インストーラーの SHA-256 を、公式 GitHub Release API 公開値と照合します。一致しなければ停止します。[M2]
 4. 選択した Conda が対象 OS のネイティブ版か確認します。
-5. クロスプラットフォーム用 `environment.yml` から、このリポジトリ専用の `mlfb-mnist` 環境を作成します。既に存在する場合は、`--prune` を指定して同じ定義へ更新します。[C1] Windows と macOS では PyTorch 2.3.1 を取得するチャンネルが異なるため、環境の依存解決中だけ `CONDA_CHANNEL_PRIORITY=flexible` を指定します。ユーザーの `.condarc` は変更しません。strict mode は同名パッケージの下位チャンネルへのフォールバックを禁止するため、このクロスプラットフォーム定義には使用しません。[C3]
+5. クロスプラットフォーム用 `environment.yml` から、このリポジトリ専用の `mlfb-mnist` 環境を作成します。既に存在する場合は、`--prune` を指定して同じ定義へ更新します。[C1] PyTorch と torchvision は `environment.yml` で conda-forge を明示指定しています。環境の依存解決中だけ `CONDA_CHANNEL_PRIORITY=flexible` を指定し、他の依存関係をクロスプラットフォームで解決できるようにします。ユーザーの `.condarc` は変更しません。[C3]
 6. 全直接依存を import し、scikit-learn の Digits データ形状 `(1797, 64)` を検査します。[S2]
 7. torchvision の MNIST 学習・テストデータを `data/MNIST/` に準備します。`download=True` は、未取得時のみインターネットから取得する torchvision の公式仕様です。[T1]
 8. 全コード実行オプションを指定した場合、リポジトリ内の `.ipynb` を自動検出し、nbconvert で順番に実行して `executed-notebooks/` に保存します。生成済み Notebook と `.ipynb_checkpoints` は再実行対象から除外します。セルで例外が発生すると処理は失敗します（`--allow-errors` は使いません）。完走後はカーネルを即時終了し、長い終了処理を残しません。[J1][J2]
@@ -203,7 +203,8 @@ Conda が PATH に無い場合は、セットアップ完了時に表示され�
 
 - Windows ホストで `setup.ps1` の PowerShell 構文解析に成功。
 - `setup.sh` は Bash 構文検査と ShellCheck に成功。
-- Conda 26.5.3 solver と `CONDA_CHANNEL_PRIORITY=flexible` を使う dry-run で、`win-64`、`osx-64`、`osx-arm64` の3対象について `environment.yml` の依存解決に成功。異OS向け dry-run では、Conda 公式資料に従い検証用の `CONDA_OVERRIDE_OSX=11.0` を指定しました。[C1][C3]
+- 当時の Conda 26.5.3 solver と `CONDA_CHANNEL_PRIORITY=flexible` を使う dry-run で、当時の `environment.yml` の `win-64`、`osx-64`、`osx-arm64` 向け依存解決に成功。異OS向け dry-run では、Conda 公式資料に従い検証用の `CONDA_OVERRIDE_OSX=11.0` を指定しました。[C1][C3]
+- 2026-09-23 に、Ubuntu 26.04 で PyTorch 2.3.1 の `libtorch_cpu.so` が executable stack を要求して import に失敗することを確認しました。`pytorch-cpu` feedstock の release-tracking issue と conda-forge artifact metadata で確認した executable-stack 修正を含む PyTorch 2.5.1／torchvision 0.20.1 の互換ペアへ更新しました。[T3][T4][T5]
 - strict mode では、チャンネル順により Windows または macOS 用の PyTorch 同名パッケージが除外されることを実測しました。このため、スクリプトは環境作成・更新プロセスだけを flexible mode に固定しています。[C3]
 - Windows では固定版 Miniforge の SHA-256 検証、環境作成、依存 import、Digits データ検査、MNIST データ取得を実行して成功。
 - Windows では最新版の `setup.ps1 -RunNotebooks` により、自動検出した現在の2 Notebook をエラー許容なしで最後まで実行して成功。生成物を解析し、`plot_digits_classification` は非空コードセル8/8、`mnist_pytorch` は5/5が出力または実行番号を持ち、例外出力は両方0件でした。CNNは第5 epochとテスト評価の出力まで確認しました。
@@ -223,6 +224,12 @@ macOS 実機でのランタイム実行は、この Windows 検証環境から�
 - [R2] [`mnist/plot_digits_classification.ipynb`](mnist/plot_digits_classification.ipynb) — import、Digits 読み込み、SVC 学習・評価、ブラウザーモデル保存コード。
 - [R3] [`mnist/mnist_pytorch.ipynb`](mnist/mnist_pytorch.ipynb) — import、デバイス選択、MNIST 取得、5 epoch の CNN 学習コード。
 - [R4] [`mnist.yml`](mnist.yml) — 元の Python／パッケージバージョンと Windows 固有ビルドの完全スナップショット。
+
+### PyTorch
+
+- [T3] [conda-forge/pytorch-cpu-feedstock#350](https://github.com/conda-forge/pytorch-cpu-feedstock/issues/350) — executable-stack 修正を含む 2.5.x release の追跡。
+- [T4] [conda-forge PyTorch 2.5.1 artifacts](https://api.anaconda.org/release/conda-forge/pytorch/2.5.1) — 修正版の各プラットフォーム artifact metadata。
+- [T5] [PyTorch previous versions](https://pytorch.org/get-started/previous-versions/) — PyTorch 2.5.1 と torchvision 0.20.1 の対応関係。
 
 ### 公式外部資料
 

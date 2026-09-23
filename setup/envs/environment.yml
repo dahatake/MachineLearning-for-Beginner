@@ -1,5 +1,7 @@
 # Cross-platform direct dependencies for the two notebooks in mnist/.
-# Versions are inherited from the repository's original Windows-specific mnist.yml.
+# Versions are based on the repository's original Windows-specific mnist.yml.
+# PyTorch uses the 2.5.1/0.20.1 compatible pair so Linux environments use the
+# conda-forge build with the executable-stack compatibility fix.
 # Sources:
 # - Repository dependency snapshot: ./mnist.yml
 # - Conda environment files: https://docs.conda.io/projects/conda/en/stable/user-guide/tasks/manage-environments.html
@@ -13,8 +15,8 @@ channels:
   - nodefaults
 dependencies:
   - python=3.12.3
-  - pytorch=2.3.1
-  - torchvision=0.18.1
+  - conda-forge::pytorch=2.5.1
+  - conda-forge::torchvision=0.20.1
   - scikit-learn=1.5.0
   - matplotlib=3.8.4
   - notebook=7.2.0
