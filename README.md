@@ -1,6 +1,10 @@
 # MachineLearning-for-Beginner
 機械学習の原理や基礎をこれから学ぶ方向けのサンプルコードです。
 
+## セットアップ
+
+Windows、macOS、Linux の手順と、Anaconda（既定）、Miniconda、venv の選び方は [`SETUP.md`](SETUP.md) を参照してください。
+
 ここでは以下の2つを体験を通して。機械学習について学び実際にモデルの作成を行います。
 
 1. MNIST
@@ -540,4 +544,3 @@ https://learn.microsoft.com/ja-jp/azure/azure-resource-manager/management/resour
 https://learn.microsoft.com/ja-jp/azure/azure-resource-manager/management/azure-services-resource-providers?source=recommendations
 
 - Custom Vision Service は Cognitive Service (旧名) になっています
-

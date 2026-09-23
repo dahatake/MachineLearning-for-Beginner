@@ -1,8 +1,8 @@
 # セットアップおよび全コード実行手順
 
-最終確認日: **2026-08-28**
+最終確認日: **2026-09-23**
 
-この文書は、`setup/setup-windows.ps1`（Windows）または `setup/setup-mac.sh`（macOS）を使い、現在リポジトリに存在する全コードを実行する手順です。
+この文書は、`setup/setup-windows.ps1`（Windows）、`setup/setup-mac.sh`（macOS）、または `setup/setup-linux.sh`（Linux）を使い、現在リポジトリに存在する全コードを実行する手順です。既定のモードは Anaconda です。容量を抑えたい場合は Miniconda、Python 標準の仮想環境を使いたい場合は venv を選べます。
 
 ## 対象範囲
 
@@ -23,18 +23,17 @@
 |---|---|---|
 | Windows 10 以降 | x86_64 | PowerShell 7 以降、インターネット接続 [M1][P1] |
 | macOS 11 以降 | Intel x86_64 / Apple Silicon arm64 | 標準の Bash、`curl`、`shasum`、インターネット接続 [M1] |
+| Linux | x86_64 / arm64 | Bash、`curl` または `wget`、インターネット接続 [M1] |
 
-Windows ARM64 は、採用した Miniforge リリースにネイティブ Windows ARM64 インストーラーがないため、本手順では対応を主張しません。[M1][M2]
-
-Miniforge 公式資料では Apple Silicon ビルドを experimental と注記しています。本スクリプトは公式 arm64 インストーラーと arm64 Conda パッケージを使用しますが、この留保も適用されます。[M1]
+Windows ARM64 は、固定している公式 Anaconda/Miniconda の Windows x86_64 インストーラー対象外のため、本手順では対応を主張しません。[M1][M2]
 
 GPU は必須ではありません。PyTorch Notebook は CUDA、MPS、CPU の順で利用可否を判定し、アクセラレーターが無ければ CPU を使用します。[R3] `environment.yml` は元の `mnist.yml` を基にしつつ、Linux の executable-stack 互換性修正を含む conda-forge build を明示指定するため、PyTorch 2.5.1／torchvision 0.20.1 を指定しています。[R4][T3][T4]
 
 ## スクリプトが行うこと
 
 1. 既存の Conda を検索します。
-2. Conda が無い場合だけ、固定した **Miniforge 26.5.3-0** をユーザー領域へ非対話インストールします。[M1][M2]
-3. ダウンロードした Miniforge インストーラーの SHA-256 を、公式 GitHub Release API 公開値と照合します。一致しなければ停止します。[M2]
+2. 選んだモードが Anaconda または Miniconda で、Conda が無い場合だけ、固定した公式インストーラーをユーザー領域へ非対話インストールします。[M1][M2]
+3. ダウンロードした Conda インストーラーの SHA-256 を公式公開値と照合します。一致しなければ停止します。[M2]
 4. 選択した Conda が対象 OS のネイティブ版か確認します。
 5. クロスプラットフォーム用 `environment.yml` から、このリポジトリ専用の `mlfb-mnist` 環境を作成します。既に存在する場合は、`--prune` を指定して同じ定義へ更新します。[C1] PyTorch と torchvision は `environment.yml` で conda-forge を明示指定しています。環境の依存解決中だけ `CONDA_CHANNEL_PRIORITY=flexible` を指定し、他の依存関係をクロスプラットフォームで解決できるようにします。ユーザーの `.condarc` は変更しません。[C3]
 6. 全直接依存を import し、scikit-learn の Digits データ形状 `(1797, 64)` を検査します。[S2]
@@ -72,12 +71,12 @@ Windows 10 などで WinGet を利用できない場合は、同じ Microsoft �
 pwsh.exe -NoLogo -NoProfile -File .\setup\setup-windows.ps1
 ```
 
-これにより環境構築、依存確認、MNIST データ準備まで行います。管理者権限は要求しません。Conda が無い場合の既定インストール先は `$HOME\Miniforge3` です。
+これにより環境構築、依存確認、MNIST データ準備まで行います。管理者権限は要求しません。既定のモードは Anaconda で、インストーラーはユーザー領域へ入ります。
 
-Miniforge 公式資料には Windows のインストール先で空白や特殊文字を避けるよう注意があります。[M1] 既定パスにそれらが含まれる場合、スクリプトは推測で別の場所へ導入せず停止します。書き込み可能な ASCII パスを明示して再実行してください。
+Conda の公式資料に従い、Windows のインストール先には空白や特殊文字を避けてください。[M1] 既定パスにそれらが含まれる場合、スクリプトは推測で別の場所へ導入せず停止します。書き込み可能な ASCII パスを明示して再実行してください。
 
 ```powershell
-pwsh.exe -NoLogo -NoProfile -File .\setup\setup-windows.ps1 -MiniforgePrefix 'D:\Miniforge3'
+pwsh.exe -NoLogo -NoProfile -File .\setup\setup-windows.ps1 -InstallRoot 'D:\Conda'
 ```
 
 ### 3. 全コードを自動実行
@@ -108,6 +107,13 @@ pwsh.exe -NoLogo -NoProfile -File .\setup\setup-windows.ps1 -SkipDataDownload
 Unblock-File -LiteralPath .\setup\setup-windows.ps1
 ```
 
+モードを明示する場合:
+
+```powershell
+pwsh.exe -NoLogo -NoProfile -File .\setup\setup-windows.ps1 -Mode miniconda -RunNotebooks
+pwsh.exe -NoLogo -NoProfile -File .\setup\setup-windows.ps1 -Mode venv -RunNotebooks
+```
+
 ## macOS の手順
 
 ### 1. セットアップのみ実行
@@ -118,12 +124,12 @@ Terminal でリポジトリのルートへ移動し、スクリプトと `enviro
 bash ./setup/setup-mac.sh
 ```
 
-Conda が無い場合の既定インストール先は `${HOME}/miniforge3` です。Miniforge 公式の非対話インストール方式 `bash <installer> -b -p <prefix>` を使用し、シェル初期化ファイルは変更しません。[M1]
+Conda が無い場合は、選んだ Conda の公式インストーラーを `${HOME}` 配下へ非対話で導入します。シェル初期化ファイルは変更しません。[M1]
 
 ### 2. 全コードを自動実行
 
 ```bash
-bash ./setup/setup-mac.sh --run-notebooks
+bash ./setup/setup-mac.sh --run-notebooks --accept-anaconda-tos
 ```
 
 初回からこのコマンドだけを実行しても構いません。
@@ -136,10 +142,10 @@ bash ./setup/setup-mac.sh --run-notebooks
 bash ./setup/setup-mac.sh --conda /path/to/conda --run-notebooks
 ```
 
-Miniforge の導入先を変える場合:
+Conda の導入先を変える場合:
 
 ```bash
-bash ./setup/setup-mac.sh --miniforge-prefix "${HOME}/custom-miniforge"
+bash ./setup/setup-mac.sh --install-root "${HOME}/custom-conda"
 ```
 
 データの事前取得を省略する場合:
@@ -147,6 +153,29 @@ bash ./setup/setup-mac.sh --miniforge-prefix "${HOME}/custom-miniforge"
 ```bash
 bash ./setup/setup-mac.sh --skip-data-download
 ```
+
+## Linux の手順
+
+セットアップのみを実行します。既定のモードは Anaconda です。
+
+```bash
+bash ./setup/setup-linux.sh --yes --accept-anaconda-tos
+```
+
+全 Notebook も実行する場合:
+
+```bash
+bash ./setup/setup-linux.sh --yes --accept-anaconda-tos --run-notebooks
+```
+
+Miniconda または venv を使う場合:
+
+```bash
+bash ./setup/setup-linux.sh --mode miniconda --yes --run-notebooks
+bash ./setup/setup-linux.sh --mode venv --yes --run-notebooks
+```
+
+`--accept-anaconda-tos` は Anaconda を選ぶ場合だけ指定してください。Miniconda と venv は Anaconda の利用規約への同意を要求しません。
 
 ## 実行結果
 
@@ -183,10 +212,18 @@ executed-notebooks/
 
 完了後、HTMLを再読み込みしてください。静的HTMLからローカルのPowerShell、Bash、Jupyterを直接起動するボタンは設けていません。
 
+## 画面例
+
+次の画像は、既存の学習用資料から再利用した個人情報を含まない画面例です。Windows と Jupyter の共通操作を示すもので、macOS 固有の画面は含めていません。
+
+- [ZIP のダウンロード画面](setup/images/win-01-unblock-zip.png)
+- [環境選択の画面](setup/images/win-04-menu.png)
+- [Jupyter で Notebook を実行した画面](setup/images/jupyter-02-run-cell.png)
+
 ## 失敗時の確認
 
 - **SHA-256 不一致**: スクリプトはインストールを実行せず停止します。ネットワークキャッシュやプロキシを確認し、再取得してください。期待値を手動で変更せず、公式 Release API と照合してください。[M2]
-- **ネットワークエラー**: 初回は Miniforge、Conda パッケージ、torchvision MNIST の取得に外部接続が必要です。[M1][T1]
+- **ネットワークエラー**: 初回は選択した Conda の公式インストーラー、Conda パッケージ、torchvision MNIST の取得に外部接続が必要です。[M1][T1]
 - **Notebook 実行が長い**: `mnist_pytorch.ipynb` は 5 epoch の CNN 学習を行います。[R3] スクリプトは長時間セルに対応するため nbconvert のセルタイムアウトを無制限（`-1`）にしています。[J1] また、Windows の実測で学習完了後の graceful shutdown が長時間残ったため、公式設定の `shutdown_kernel=immediate` を指定しています。[J2]
 - **推論アプリにモデル未準備と表示される**: `mnist/plot_digits_classification.ipynb` の全コードセルを上から実行するか、OS別の全コード自動実行手順を実施し、HTMLを再読み込みしてください。最後のセルでHTMLが見つからない場合は、Notebookと `plot_digits_predition.html` が同じ `mnist/` ディレクトリにあることを確認してください。[R2]
 - **既存 `mlfb-mnist` 環境の不整合**: Conda 公式手順に従い、不要なら専用環境を削除してからセットアップを再実行できます。[C1]
@@ -199,24 +236,24 @@ Conda が PATH に無い場合は、セットアップ完了時に表示され�
 
 ## 検証記録
 
-2026-08-28 に次を確認しました。
+2026-09-23 に次を確認しました。2026-08-28 の記録は、当時の版数に対する履歴です。
 
-- Windows ホストで `setup.ps1` の PowerShell 構文解析に成功。
-- `setup.sh` は Bash 構文検査と ShellCheck に成功。
+- Windows ホストで `setup/setup-windows.ps1` の PowerShell 構文解析に成功。
+- `setup/setup-mac.sh` と `setup/setup-linux.sh` は Bash 構文検査と ShellCheck に成功。
 - 当時の Conda 26.5.3 solver と `CONDA_CHANNEL_PRIORITY=flexible` を使う dry-run で、当時の `environment.yml` の `win-64`、`osx-64`、`osx-arm64` 向け依存解決に成功。異OS向け dry-run では、Conda 公式資料に従い検証用の `CONDA_OVERRIDE_OSX=11.0` を指定しました。[C1][C3]
 - 2026-09-23 に、Ubuntu 26.04 で PyTorch 2.3.1 の `libtorch_cpu.so` が executable stack を要求して import に失敗することを確認しました。`pytorch-cpu` feedstock の release-tracking issue と conda-forge artifact metadata で確認した executable-stack 修正を含む PyTorch 2.5.1／torchvision 0.20.1 の互換ペアへ更新しました。[T3][T4][T5]
 - strict mode では、チャンネル順により Windows または macOS 用の PyTorch 同名パッケージが除外されることを実測しました。このため、スクリプトは環境作成・更新プロセスだけを flexible mode に固定しています。[C3]
-- Windows では固定版 Miniforge の SHA-256 検証、環境作成、依存 import、Digits データ検査、MNIST データ取得を実行して成功。
+- Windows、macOS、Linux の CI matrix で、固定版 Anaconda/Miniconda の SHA-256 検証、環境作成、依存 import、Digits データ検査、MNIST データ取得を実行しました。
 - Windows では最新版の `setup.ps1 -RunNotebooks` により、自動検出した現在の2 Notebook をエラー許容なしで最後まで実行して成功。生成物を解析し、`plot_digits_classification` は非空コードセル8/8、`mnist_pytorch` は5/5が出力または実行番号を持ち、例外出力は両方0件でした。CNNは第5 epochとテスト評価の出力まで確認しました。
 - Windowsで `plot_digits_classification.ipynb` をエラー許容なしで全セル実行し、支持ベクトル519件のSVCとテスト899件中871件正解（96.885%）の評価指標がHTMLへ保存されることを確認しました。
 - 埋め込みモデルの全配列を同条件で再学習したscikit-learnモデルと照合し、JavaScriptのone-vs-one推論がテスト899件すべてで `clf.predict()` と一致することを確認しました。
 - WindowsのChromium系統合ブラウザーで、`file://` 起動、合成したマウス／タッチPointer Eventによる描画・自動推論、クリア、モデル欠落時の案内、デスクトップ／狭幅表示、ライト／ダークテーマ、外部リソース要求0件を確認しました。物理タッチデバイスでの実機操作は未実施です。
 
-macOS 実機でのランタイム実行は、この Windows 検証環境からは実施していません。macOS について確認済みなのは、公式対応条件、両アーキテクチャ向け依存解決、Bash 構文、ShellCheck です。この制約を超える実機検証済みという主張はしていません。
+macOS の物理実機はありませんが、GitHub Actions の macOS arm64/Intel runner で runtime E2E を実施しました。ローカル物理実機の操作や、macOS の画面撮影は行っていません。
 
 ## 出典
 
-すべて 2026-08-28 に確認しました。
+外部資料は参照時点で確認し、CI の実行記録は 2026-09-23 のものです。
 
 ### リポジトリ内一次資料
 
@@ -236,8 +273,8 @@ macOS 実機でのランタイム実行は、この Windows 検証環境から�
 - [C1] Conda, **Managing environments** — YAML 環境作成・更新、クロスプラットフォーム共有、異OS dry-run の制約: <https://docs.conda.io/projects/conda/en/stable/user-guide/tasks/manage-environments.html>
 - [C2] Conda, **conda run** — 環境内コマンド実行: <https://docs.conda.io/projects/conda/en/stable/commands/run.html>
 - [C3] Conda, **Managing channels** — チャンネル順序と strict channel priority の動作: <https://docs.conda.io/projects/conda/en/stable/user-guide/tasks/manage-channels.html>
-- [M1] conda-forge, **Miniforge README** — Windows/macOS 対応条件、インストーラー、非対話インストール: <https://github.com/conda-forge/miniforge>
-- [M2] conda-forge, **Miniforge 26.5.3-0 Release API** — 固定リリースの資産名、URL、SHA-256 digest: <https://api.github.com/repos/conda-forge/miniforge/releases/tags/26.5.3-0>
+- [M1] Anaconda, **Installing Anaconda Distribution** — 公式インストーラーとインストール方法: <https://www.anaconda.com/docs/getting-started/anaconda/install>
+- [M2] Anaconda, **Anaconda Distribution archive** — 固定版インストーラーと SHA-256 digest: <https://repo.anaconda.com/archive/>
 - [J1] Jupyter nbconvert, **Executing notebooks** — `--execute`、kernel、セル timeout、例外時の動作: <https://nbconvert.readthedocs.io/en/latest/execute_api.html>
 - [J2] Jupyter nbconvert, **Configuration options** — `shutdown_kernel` の `graceful`／`immediate` 設定: <https://nbconvert.readthedocs.io/en/latest/config_options.html>
 - [T1] torchvision, **MNIST dataset API** — `root`、`train`、`download` の仕様: <https://docs.pytorch.org/vision/stable/generated/torchvision.datasets.MNIST.html>
