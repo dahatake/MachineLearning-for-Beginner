@@ -580,18 +580,22 @@ mlfb_python_version_ok() {
 
 mlfb_find_python() {
     for candidate in python3.14 python3.13 python3.12 python3.11 python3.10 python3; do
-        if mlfb_command_exists "${candidate}" && mlfb_python_version_ok "${candidate}"; then
-            command -v "${candidate}"
+        mlfb_command_exists "${candidate}" || continue
+        candidate_path="$(command -v "${candidate}")"
+        # macOS の /usr/bin/python3 は Command Line Tools が無いとインストールを促すダイアログを出すため候補にしない。
+        if [ "${MLFB_SETUP_OS}" = "macos" ] && [ "${candidate_path}" = "/usr/bin/python3" ] && ! xcode-select -p >/dev/null 2>&1; then
+            continue
+        fi
+        if mlfb_python_version_ok "${candidate_path}"; then
+            printf '%s\n' "${candidate_path}"
             return 0
         fi
     done
     return 1
 }
 
-mlfb_install_isolated_macos_python() {
-    [ "${MLFB_TEST_ISOLATE}" = "1" ] || return 0
-    [ "${MLFB_SETUP_OS}" = "macos" ] || return 0
-
+# 結果は python_cmd に設定する（$(...) で呼ぶと進捗表示が戻り値に混ざるため）。
+mlfb_install_macos_python() {
     version="$(mlfb_config_value python_version)"
     installer_name="python-${version}-macos11.pkg"
     python_path="/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12"
@@ -600,15 +604,15 @@ mlfb_install_isolated_macos_python() {
 
     if [ "${MLFB_DRY_RUN}" -eq 1 ]; then
         mlfb_info "[dry-run] ${url} を ${python_path} へインストールします。"
-        printf '%s\n' "${python_path}"
+        python_cmd="${python_path}"
         return 0
     fi
     if [ -x "${python_path}" ] && mlfb_python_version_ok "${python_path}"; then
-        printf '%s\n' "${python_path}"
+        python_cmd="${python_path}"
         return 0
     fi
 
-    mlfb_info "テスト隔離用の Python ${version} をインストールします。"
+    mlfb_confirm_privileged "venv モードに必要な python.org の Python ${version} をインストールします。macOS のパスワードを求められます。実行するコマンド: sudo installer -pkg ${installer_name} -target /"
     if [ -z "${MLFB_TEMP_DIR}" ]; then
         MLFB_TEMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/mlfb-setup.XXXXXX")"
     fi
@@ -616,9 +620,11 @@ mlfb_install_isolated_macos_python() {
     mlfb_download_file "${url}" "${installer}"
     actual_sha="$(mlfb_sha256_file "${installer}")"
     [ "${actual_sha}" = "${expected_sha}" ] || mlfb_die "Python インストーラーの SHA-256 が一致しません。期待値: ${expected_sha} / 実測値: ${actual_sha}"
-    mlfb_run_privileged "test Python installer" installer -pkg "${installer}" -target /
-    [ -x "${python_path}" ] || mlfb_die "テスト用 Python が見つかりません: ${python_path}"
-    printf '%s\n' "${python_path}"
+    mlfb_run_privileged "Python installer" installer -pkg "${installer}" -target /
+    [ -x "${python_path}" ] || mlfb_die "インストール後に Python が見つかりません: ${python_path}"
+    # 証明書を入れないと MNIST のダウンロードで SSL エラーになる。
+    mlfb_run "Install Certificates" "/Applications/Python 3.12/Install Certificates.command"
+    python_cmd="${python_path}"
 }
 
 mlfb_sudo_prefix() {
@@ -680,9 +686,15 @@ mlfb_linux_install_venv_support() {
 
 mlfb_setup_venv_mode() {
     mlfb_step 3 "Python venv を作成しています" "5〜15 分"
-    python_cmd="$(mlfb_install_isolated_macos_python || true)"
+    python_cmd=""
+    if [ "${MLFB_TEST_ISOLATE}" = "1" ] && [ "${MLFB_SETUP_OS}" = "macos" ]; then
+        mlfb_install_macos_python
+    fi
     if [ -z "${python_cmd}" ]; then
         python_cmd="$(mlfb_find_python || true)"
+    fi
+    if [ -z "${python_cmd}" ] && [ "${MLFB_SETUP_OS}" = "macos" ]; then
+        mlfb_install_macos_python
     fi
     [ -n "${python_cmd}" ] || mlfb_die "Python 3.10〜3.14 が見つかりません。venv モードには Python が必要です。"
     mlfb_linux_install_venv_support "${python_cmd}"
