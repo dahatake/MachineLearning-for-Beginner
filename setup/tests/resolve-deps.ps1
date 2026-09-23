@@ -5,8 +5,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 $setupRoot = Split-Path -Parent $PSScriptRoot
-$environmentFile = Join-Path $setupRoot "envs\environment.yml"
-$baseRequirements = Join-Path $setupRoot "requirements\venv-base.txt"
+$environmentFile = Join-Path (Join-Path $setupRoot "envs") "environment.yml"
+$baseRequirements = Join-Path (Join-Path $setupRoot "requirements") "venv-base.txt"
 $downloadRoot = Join-Path ([IO.Path]::GetTempPath()) ("mlfb-pip-resolve-" + [guid]::NewGuid())
 
 function Invoke-CondaDryRun {

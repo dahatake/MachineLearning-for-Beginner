@@ -4,10 +4,13 @@ param()
 $ErrorActionPreference = "Stop"
 $setupRoot = Split-Path -Parent $PSScriptRoot
 $root = Split-Path -Parent $setupRoot
+$windowsSetupScript = Join-Path $setupRoot "setup-windows.ps1"
+$windowsCommonScript = Join-Path $setupRoot "lib/common.ps1"
+$linkChecker = Join-Path $setupRoot "tests/check_links.py"
 
 foreach ($path in @(
-    "$setupRoot\setup-windows.ps1",
-    "$setupRoot\lib\common.ps1"
+    $windowsSetupScript,
+    $windowsCommonScript
 )) {
     $tokens = $null
     $errors = $null
@@ -19,13 +22,13 @@ $scriptAnalyzer = Get-Command Invoke-ScriptAnalyzer -ErrorAction SilentlyContinu
 if (-not $scriptAnalyzer) {
     throw "PSScriptAnalyzer が必要です。Install-Module PSScriptAnalyzer -Scope CurrentUser を実行してください。"
 }
-foreach ($path in @("$setupRoot\setup-windows.ps1", "$setupRoot\lib\common.ps1")) {
+foreach ($path in @($windowsSetupScript, $windowsCommonScript)) {
     $issues = Invoke-ScriptAnalyzer -Path $path -Severity Error
     if ($issues) { throw ($issues | Out-String) }
 }
 
 $bom = [byte[]](0xEF, 0xBB, 0xBF)
-foreach ($path in @("$setupRoot\setup-windows.ps1", "$setupRoot\lib\common.ps1")) {
+foreach ($path in @($windowsSetupScript, $windowsCommonScript)) {
     $bytes = [IO.File]::ReadAllBytes($path)
     if ($bytes.Length -lt 3 -or -not (($bytes[0..2] -join ",") -eq ($bom -join ","))) {
         throw "UTF-8 BOM がありません: $path"
@@ -33,10 +36,10 @@ foreach ($path in @("$setupRoot\setup-windows.ps1", "$setupRoot\lib\common.ps1")
 }
 
 foreach ($path in @(
-    "$setupRoot\setup-mac.sh",
-    "$setupRoot\setup-linux.sh",
-    "$setupRoot\start-jupyter.sh",
-    "$setupRoot\lib\common.sh"
+    (Join-Path $setupRoot "setup-mac.sh"),
+    (Join-Path $setupRoot "setup-linux.sh"),
+    (Join-Path $setupRoot "start-jupyter.sh"),
+    (Join-Path $setupRoot "lib/common.sh")
 )) {
     if ([IO.File]::ReadAllBytes($path) -contains 13) {
         throw "LF 改行である必要があります: $path"
@@ -61,7 +64,7 @@ try {
 finally {
     Pop-Location
 }
-& python "$setupRoot/tests/check_links.py"
+& python $linkChecker
 if ($LASTEXITCODE -ne 0) { throw "check_links.py に失敗しました。" }
 
 Write-Host "Static checks passed."
