@@ -50,6 +50,9 @@ function Invoke-PipResolve {
         "-m", "pip", "download", "--dest", $destination, "--only-binary=:all:", "--platform", $Platform,
         "--implementation", "cp", "--python-version", $PythonVersion, "--abi", $Abi
     )
+    if ($PythonVersion -eq "314") {
+        $baseArguments += "--no-deps"
+    }
     $baseArguments += $BasePackages
     & python @baseArguments
     if ($LASTEXITCODE -ne 0) { throw "Base pip wheel resolution failed for $Platform / Python $PythonVersion." }
