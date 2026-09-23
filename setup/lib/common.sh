@@ -541,12 +541,11 @@ mlfb_setup_conda_mode() {
     mlfb_step 4 "Conda 環境を作成または更新しています" "5〜15 分"
     if mlfb_conda_env_exists "${conda}"; then
         CONDA_CHANNEL_PRIORITY=flexible mlfb_run "conda env update" \
-            "${conda}" --override-channels --channel conda-forge --channel pytorch \
-            env update --name "${MLFB_ENVIRONMENT_NAME}" --file "${MLFB_ENVIRONMENT_FILE}" --prune
+            "${conda}" env update --name "${MLFB_ENVIRONMENT_NAME}" --file "${MLFB_ENVIRONMENT_FILE}" --prune
     else
-        CONDA_CHANNEL_PRIORITY=flexible mlfb_run "conda env create" \
-            "${conda}" --override-channels --channel conda-forge --channel pytorch \
-            env create --name "${MLFB_ENVIRONMENT_NAME}" --file "${MLFB_ENVIRONMENT_FILE}" --yes
+        CONDA_CHANNEL_PRIORITY=flexible mlfb_run "conda create" \
+            "${conda}" create --name "${MLFB_ENVIRONMENT_NAME}" --file "${MLFB_ENVIRONMENT_FILE}" --yes \
+            --override-channels --channel conda-forge --channel pytorch
     fi
 
     if [ "${MLFB_INIT_SHELL}" -eq 1 ]; then

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 
 import nbformat
@@ -25,6 +26,7 @@ def main() -> None:
     args = parser.parse_args()
     root = args.root.resolve()
     output_root = root / "executed-notebooks"
+    os.environ.setdefault("MPLBACKEND", "Agg")
 
     for source in source_notebooks(root):
         relative = source.relative_to(root)
