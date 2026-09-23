@@ -523,6 +523,20 @@ mlfb_conda_env_exists() {
     "${conda}" run --name "${MLFB_ENVIRONMENT_NAME}" python -c "pass" >/dev/null 2>&1
 }
 
+mlfb_write_condarc() {
+    if [ -z "${MLFB_TEMP_DIR}" ]; then
+        MLFB_TEMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/mlfb-setup.XXXXXX")"
+    fi
+    config="${MLFB_TEMP_DIR}/condarc"
+    cat > "${config}" <<'EOF'
+channels:
+  - conda-forge
+  - pytorch
+channel_priority: flexible
+EOF
+    printf '%s\n' "${config}"
+}
+
 mlfb_setup_conda_mode() {
     selected_mode="$1"
     conda=""
@@ -539,13 +553,13 @@ mlfb_setup_conda_mode() {
     fi
 
     mlfb_step 4 "Conda 環境を作成または更新しています" "5〜15 分"
+    condarc="$(mlfb_write_condarc)"
     if mlfb_conda_env_exists "${conda}"; then
         CONDA_CHANNEL_PRIORITY=flexible mlfb_run "conda env update" \
-            "${conda}" env update --name "${MLFB_ENVIRONMENT_NAME}" --file "${MLFB_ENVIRONMENT_FILE}" --prune
+            env CONDARC="${condarc}" "${conda}" env update --name "${MLFB_ENVIRONMENT_NAME}" --file "${MLFB_ENVIRONMENT_FILE}" --prune
     else
-        CONDA_CHANNEL_PRIORITY=flexible mlfb_run "conda create" \
-            "${conda}" create --name "${MLFB_ENVIRONMENT_NAME}" --file "${MLFB_ENVIRONMENT_FILE}" --yes \
-            --override-channels --channel conda-forge --channel pytorch
+        CONDA_CHANNEL_PRIORITY=flexible mlfb_run "conda env create" \
+            env CONDARC="${condarc}" "${conda}" env create --name "${MLFB_ENVIRONMENT_NAME}" --file "${MLFB_ENVIRONMENT_FILE}" --yes
     fi
 
     if [ "${MLFB_INIT_SHELL}" -eq 1 ]; then

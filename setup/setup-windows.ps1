@@ -119,7 +119,7 @@ function Invoke-SetupCommand {
         Write-Host "[dry-run] $Description"
         return
     }
-    & $Command
+    & $Command | Out-Host
     if ($LASTEXITCODE -and $LASTEXITCODE -ne 0) {
         throw "$Description に失敗しました。終了コード: $LASTEXITCODE"
     }
@@ -214,12 +214,22 @@ function Invoke-CondaSetup {
     }
     Write-Step 4 "mlfb-mnist 環境を作成しています" "5〜15 分"
     Invoke-SetupCommand "Conda 環境の作成または更新" {
-        $env:CONDA_CHANNEL_PRIORITY = "flexible"
-        & $conda run --name $EnvironmentName python -c "pass" *> $null
-        if ($LASTEXITCODE -eq 0) {
+        $condarc = Join-Path ([IO.Path]::GetTempPath()) "mlfb-condarc-$PID"
+        @"
+channels:
+  - conda-forge
+  - pytorch
+channel_priority: flexible
+"@ | Set-Content -LiteralPath $condarc -NoNewline
+        $previousCondarc = $env:CONDARC
+        try {
+            $env:CONDARC = $condarc
+            $env:CONDA_CHANNEL_PRIORITY = "flexible"
             & $conda env update --name $EnvironmentName --file $EnvironmentFile --prune
-        } else {
-            & $conda create --name $EnvironmentName --file $EnvironmentFile --yes --override-channels --channel conda-forge --channel pytorch
+        }
+        finally {
+            $env:CONDARC = $previousCondarc
+            Remove-Item -LiteralPath $condarc -Force -ErrorAction SilentlyContinue
         }
     }
     if ($InitShell) { Invoke-SetupCommand "conda init" { & $conda init powershell } }
