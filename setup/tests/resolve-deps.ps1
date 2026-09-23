@@ -40,14 +40,22 @@ function Invoke-PipResolve {
         [string]$Platform,
         [string]$PythonVersion,
         [string]$Abi,
-        [string[]]$TorchPackages
+        [string[]]$TorchPackages,
+        [string]$IndexUrl
     )
 
     $destination = Join-Path $downloadRoot "$Platform-py$PythonVersion"
     Write-Host "Resolving pip wheels for $Platform / Python $PythonVersion"
-    & python -m pip download --dest $destination --only-binary=:all: --platform $Platform `
-        --implementation cp --python-version $PythonVersion --abi $Abi `
-        --requirement $baseRequirements @TorchPackages
+    $pipArguments = @(
+        "-m", "pip", "download", "--dest", $destination, "--only-binary=:all:", "--platform", $Platform,
+        "--implementation", "cp", "--python-version", $PythonVersion, "--abi", $Abi,
+        "--requirement", $baseRequirements
+    )
+    if ($IndexUrl) {
+        $pipArguments += @("--extra-index-url", $IndexUrl)
+    }
+    $pipArguments += $TorchPackages
+    & python @pipArguments
     if ($LASTEXITCODE -ne 0) { throw "pip wheel resolution failed for $Platform / Python $PythonVersion." }
 }
 
@@ -61,12 +69,12 @@ try {
     }
 
     $pipTargets = @(
-        @{ Platform = "win_amd64"; PythonVersion = "310"; Abi = "cp310"; TorchPackages = @("torch==2.3.1", "torchvision==0.18.1") },
-        @{ Platform = "win_amd64"; PythonVersion = "312"; Abi = "cp312"; TorchPackages = @("torch==2.3.1", "torchvision==0.18.1") },
-        @{ Platform = "macosx_10_15_x86_64"; PythonVersion = "310"; Abi = "cp310"; TorchPackages = @("torch==2.2.2", "torchvision==0.17.2") },
-        @{ Platform = "macosx_11_0_arm64"; PythonVersion = "312"; Abi = "cp312"; TorchPackages = @("torch==2.3.1", "torchvision==0.18.1") },
-        @{ Platform = "manylinux_2_17_x86_64"; PythonVersion = "313"; Abi = "cp313"; TorchPackages = @("torch==2.9.1", "torchvision==0.24.1") },
-        @{ Platform = "manylinux_2_17_aarch64"; PythonVersion = "314"; Abi = "cp314"; TorchPackages = @("torch==2.9.1", "torchvision==0.24.1") }
+        @{ Platform = "win_amd64"; PythonVersion = "310"; Abi = "cp310"; TorchPackages = @("torch==2.3.1+cpu", "torchvision==0.18.1+cpu"); IndexUrl = "https://download.pytorch.org/whl/cpu" },
+        @{ Platform = "win_amd64"; PythonVersion = "312"; Abi = "cp312"; TorchPackages = @("torch==2.3.1+cpu", "torchvision==0.18.1+cpu"); IndexUrl = "https://download.pytorch.org/whl/cpu" },
+        @{ Platform = "macosx_10_15_x86_64"; PythonVersion = "310"; Abi = "cp310"; TorchPackages = @("torch==2.2.2", "torchvision==0.17.2"); IndexUrl = "" },
+        @{ Platform = "macosx_11_0_arm64"; PythonVersion = "312"; Abi = "cp312"; TorchPackages = @("torch==2.3.1", "torchvision==0.18.1"); IndexUrl = "" },
+        @{ Platform = "manylinux_2_17_x86_64"; PythonVersion = "313"; Abi = "cp313"; TorchPackages = @("torch==2.9.1+cpu", "torchvision==0.24.1+cpu"); IndexUrl = "https://download.pytorch.org/whl/cpu" },
+        @{ Platform = "manylinux_2_17_aarch64"; PythonVersion = "314"; Abi = "cp314"; TorchPackages = @("torch==2.9.1", "torchvision==0.24.1"); IndexUrl = "" }
     )
     foreach ($target in $pipTargets) {
         Invoke-PipResolve @target
