@@ -1,0 +1,37 @@
+name: Phase 0 macOS package spike
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/cross-platform-setup
+    paths:
+      - .github/workflows/phase0-macos-package.yml
+
+permissions:
+  contents: read
+
+jobs:
+  install-anaconda-package:
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - name: Download and verify installer
+        env:
+          INSTALLER: Anaconda3-2026.07-1-MacOSX-arm64.pkg
+          SHA256: 904c76de27ee3d7441e9484450f0027b481a1f4fc49aa9650ebff34119fafd18
+        run: |
+          set -euo pipefail
+          curl --fail --location --output "$RUNNER_TEMP/$INSTALLER" "https://repo.anaconda.com/archive/$INSTALLER"
+          echo "$SHA256  $RUNNER_TEMP/$INSTALLER" | shasum -a 256 --check
+      - name: Install for the runner user without sudo
+        env:
+          INSTALLER: Anaconda3-2026.07-1-MacOSX-arm64.pkg
+        run: |
+          set -euo pipefail
+          installer -pkg "$RUNNER_TEMP/$INSTALLER" -target CurrentUserHomeDirectory
+          test -x "$HOME/anaconda3/bin/conda" -o -x "$HOME/opt/anaconda3/bin/conda"
+      - name: Record install locations
+        run: |
+          set -euo pipefail
+          find "$HOME" -maxdepth 3 \( -name conda -o -name 'Anaconda-Navigator.app' \) -print
