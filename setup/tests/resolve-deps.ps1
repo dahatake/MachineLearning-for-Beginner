@@ -46,16 +46,23 @@ function Invoke-PipResolve {
 
     $destination = Join-Path $downloadRoot "$Platform-py$PythonVersion"
     Write-Host "Resolving pip wheels for $Platform / Python $PythonVersion"
-    $pipArguments = @(
+    $baseArguments = @(
         "-m", "pip", "download", "--dest", $destination, "--only-binary=:all:", "--platform", $Platform,
         "--implementation", "cp", "--python-version", $PythonVersion, "--abi", $Abi,
         "--requirement", $baseRequirements
     )
+    & python @baseArguments
+    if ($LASTEXITCODE -ne 0) { throw "Base pip wheel resolution failed for $Platform / Python $PythonVersion." }
+
+    $torchArguments = @(
+        "-m", "pip", "download", "--dest", $destination, "--only-binary=:all:", "--no-deps", "--platform", $Platform,
+        "--implementation", "cp", "--python-version", $PythonVersion, "--abi", $Abi
+    )
     if ($IndexUrl) {
-        $pipArguments += @("--extra-index-url", $IndexUrl)
+        $torchArguments += @("--index-url", $IndexUrl)
     }
-    $pipArguments += $TorchPackages
-    & python @pipArguments
+    $torchArguments += $TorchPackages
+    & python @torchArguments
     if ($LASTEXITCODE -ne 0) { throw "pip wheel resolution failed for $Platform / Python $PythonVersion." }
 }
 
