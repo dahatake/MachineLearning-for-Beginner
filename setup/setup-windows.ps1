@@ -222,13 +222,16 @@ channels:
 channel_priority: flexible
 "@ | Set-Content -LiteralPath $condarc -NoNewline
         $previousCondarc = $env:CONDARC
+        $previousChannels = $env:CONDA_CHANNELS
         try {
             $env:CONDARC = $condarc
+            $env:CONDA_CHANNELS = "conda-forge,pytorch"
             $env:CONDA_CHANNEL_PRIORITY = "flexible"
             & $conda env update --name $EnvironmentName --file $EnvironmentFile --prune
         }
         finally {
             $env:CONDARC = $previousCondarc
+            $env:CONDA_CHANNELS = $previousChannels
             Remove-Item -LiteralPath $condarc -Force -ErrorAction SilentlyContinue
         }
     }

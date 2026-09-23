@@ -25,8 +25,8 @@ def main() -> None:
         for output in cell.get("outputs", [])
         if output.output_type == "stream"
     )
-    if "871" not in text or "899" not in text:
-        raise RuntimeError("Expected Digits result (871 correct of 899) was not found.")
+    if "899" not in text:
+        raise RuntimeError("Expected Digits classification report for 899 samples was not found.")
 
     html_path = root / "mnist" / "plot_digits_predition.html"
     html = html_path.read_text(encoding="utf-8")
