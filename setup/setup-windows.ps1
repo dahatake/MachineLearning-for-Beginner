@@ -30,6 +30,19 @@ $ConfigFile = Join-Path $SetupRoot "config\versions.conf"
 $EnvironmentName = "mlfb-mnist"
 $LogDirectory = Join-Path $SetupRoot "logs"
 $StateDirectory = Join-Path $SetupRoot ".state"
+$TestIsolate = $env:MLFB_TEST_ISOLATE -eq "1"
+$IsolatedHome = $null
+
+function Enable-TestIsolation {
+    if (-not $TestIsolate) { return }
+
+    $script:IsolatedHome = Join-Path $env:TEMP ("mlfb-test-home-{0}-{1}" -f $env:USERNAME, (Split-Path -Leaf $RepositoryRoot))
+    New-Item -ItemType Directory -Force -Path $script:IsolatedHome | Out-Null
+    $env:USERPROFILE = $script:IsolatedHome
+    $env:HOME = $script:IsolatedHome
+    Remove-Item Env:CONDA_EXE, Env:CONDA_PREFIX, Env:CONDA_DEFAULT_ENV -ErrorAction SilentlyContinue
+    Write-Host "テスト隔離モード: $script:IsolatedHome"
+}
 
 function Show-Usage {
     @"
@@ -73,6 +86,7 @@ function Invoke-SetupCommand {
 
 function Get-InstallParent {
     if ($InstallRoot) { return $InstallRoot }
+    if ($TestIsolate) { return $env:USERPROFILE }
     if ($env:USERPROFILE -match '[\s\u0080-\uFFFF]') {
         Write-Host "ユーザー名の文字を避けるため、C:\mlfb をインストール先に使います。"
         return "C:\mlfb"
@@ -96,6 +110,12 @@ function Get-Conda {
         (Join-Path $env:LOCALAPPDATA "miniconda3\Scripts\conda.exe"),
         "C:\ProgramData\anaconda3\Scripts\conda.exe"
     )
+    if ($TestIsolate) {
+        $candidates = @(
+            (Join-Path $parent "anaconda3\Scripts\conda.exe"),
+            (Join-Path $parent "miniconda3\Scripts\conda.exe")
+        )
+    }
     foreach ($candidate in $candidates) {
         if (Test-Path -LiteralPath $candidate -PathType Leaf) { return $candidate }
     }
@@ -203,6 +223,9 @@ function Remove-SetupEnvironment {
             if ($conda) { & $conda env remove --name $EnvironmentName --yes }
         }
     }
+    if ($TestIsolate -and $IsolatedHome -and (Test-Path -LiteralPath $IsolatedHome)) {
+        Remove-Item -LiteralPath $IsolatedHome -Recurse -Force
+    }
 }
 
 if ($Help) { Show-Usage; exit 0 }
@@ -210,6 +233,7 @@ if (-not (Test-Path -LiteralPath $EnvironmentFile)) { throw "環境定義が見�
 if (-not (Test-Path -LiteralPath $ConfigFile)) { throw "設定が見つかりません: $ConfigFile" }
 if ([Environment]::Is64BitOperatingSystem -eq $false) { throw "Windows x64 だけをサポートします。" }
 
+Enable-TestIsolation
 New-Item -ItemType Directory -Force -Path $LogDirectory, $StateDirectory | Out-Null
 $log = Join-Path $LogDirectory ("setup-windows-{0}.log" -f (Get-Date -Format "yyyyMMdd-HHmmss"))
 Start-Transcript -LiteralPath $log | Out-Null

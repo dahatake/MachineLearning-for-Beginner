@@ -35,6 +35,8 @@ MLFB_INIT_SHELL=0
 MLFB_CHECK=0
 MLFB_DRY_RUN=0
 MLFB_REMOVE_MODE=""
+MLFB_TEST_ISOLATE="${MLFB_TEST_ISOLATE:-0}"
+MLFB_ISOLATED_HOME=""
 
 mlfb_usage() {
     cat <<'EOF'
@@ -56,6 +58,18 @@ mlfb_usage() {
   --remove MODE               作成した環境だけを削除する
   -h, --help                  このヘルプを表示する
 EOF
+}
+
+mlfb_enable_test_isolation() {
+    [ "${MLFB_TEST_ISOLATE}" = "1" ] || return 0
+
+    MLFB_ISOLATED_HOME="${TMPDIR:-/tmp}/mlfb-test-home-$(id -u)-$(basename "${MLFB_REPOSITORY_ROOT}")"
+    mkdir -p "${MLFB_ISOLATED_HOME}"
+    export HOME="${MLFB_ISOLATED_HOME}"
+    unset CONDA_EXE CONDA_PREFIX CONDA_DEFAULT_ENV
+    MLFB_CONDA_PATH=""
+    MLFB_INSTALL_ROOT="${HOME}"
+    mlfb_info "テスト隔離モード: ${MLFB_ISOLATED_HOME}"
 }
 
 mlfb_start_jupyter_usage() {
@@ -362,6 +376,7 @@ mlfb_find_conda() {
     if [ "${selected_mode}" = "anaconda" ]; then
         candidates="${prefix}/bin/conda
 ${HOME}/anaconda3/bin/conda
+${HOME}/opt/anaconda3/bin/conda
 /opt/anaconda3/bin/conda"
     else
         candidates="${prefix}/bin/conda
@@ -383,7 +398,7 @@ ${HOME}/miniforge3/bin/conda
     done
     IFS="${old_ifs}"
 
-    if mlfb_command_exists conda; then
+    if [ "${MLFB_TEST_ISOLATE}" != "1" ] && mlfb_command_exists conda; then
         command -v conda
         return 0
     fi
@@ -426,10 +441,16 @@ mlfb_install_conda() {
         *.pkg)
             [ "${MLFB_SETUP_OS}" = "macos" ] || mlfb_die ".pkg インストーラーは macOS でだけ使えます: ${name}"
             if [ "${prefix}" != "${HOME}/anaconda3" ]; then
-                mlfb_info "注意: macOS の Anaconda .pkg はユーザー領域の既定パスにインストールします: ${HOME}/anaconda3"
+                mlfb_info "注意: macOS の Anaconda .pkg はユーザー領域の既定パスにインストールします。"
             fi
             mlfb_run "${selected_mode} pkg installer" installer -pkg "${installer}" -target CurrentUserHomeDirectory
-            MLFB_INSTALLED_CONDA="${HOME}/anaconda3/bin/conda"
+            if [ "${MLFB_DRY_RUN}" -eq 1 ]; then
+                MLFB_INSTALLED_CONDA="${HOME}/opt/anaconda3/bin/conda"
+            elif MLFB_INSTALLED_CONDA="$(mlfb_find_conda "${selected_mode}")"; then
+                :
+            else
+                mlfb_die "macOS の Anaconda インストール後に conda を見つけられませんでした。"
+            fi
             ;;
         *.sh)
             mlfb_run "${selected_mode} shell installer" bash "${installer}" -b -p "${prefix}"
@@ -681,6 +702,9 @@ mlfb_remove_envs() {
             fi
         done
     fi
+    if [ "${MLFB_TEST_ISOLATE}" = "1" ] && [ -n "${MLFB_ISOLATED_HOME}" ]; then
+        mlfb_run "remove isolated test home" rm -rf "${MLFB_ISOLATED_HOME}"
+    fi
 }
 
 mlfb_modes_to_run() {
@@ -699,6 +723,7 @@ mlfb_save_state() {
 
 mlfb_setup_main() {
     mlfb_parse_setup_args "$@"
+    mlfb_enable_test_isolation
     mlfb_load_config
     mlfb_preflight
     if [ "${MLFB_CHECK}" -eq 1 ]; then
