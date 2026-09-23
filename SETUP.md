@@ -1,6 +1,6 @@
 # セットアップおよび全コード実行手順
 
-最終確認日: **2026-09-23**
+最終確認日: **2026-09-24**
 
 この文書は、`setup/setup-windows.ps1`（Windows）、`setup/setup-mac.sh`（macOS）、または `setup/setup-linux.sh`（Linux）を使い、現在リポジトリに存在する全コードを実行する手順です。既定のモードは Anaconda です。容量を抑えたい場合は Miniconda、Python 標準の仮想環境を使いたい場合は venv を選べます。
 
@@ -21,7 +21,7 @@
 
 | OS | 対応 CPU | 前提 |
 |---|---|---|
-| Windows 10 以降 | x86_64 | PowerShell 7 以降、インターネット接続 [M1][P1] |
+| Windows 10 以降 | x86_64 | Windows PowerShell 5.1 または PowerShell 7、インターネット接続 [M1][P1] |
 | macOS 11 以降 | Intel x86_64 / Apple Silicon arm64 | 標準の Bash、`curl`、`shasum`、インターネット接続 [M1] |
 | Linux | x86_64 / arm64 | Bash、`curl` または `wget`、インターネット接続 [M1] |
 
@@ -41,13 +41,15 @@ GPU は必須ではありません。PyTorch Notebook は CUDA、MPS、CPU の�
 8. 全コード実行オプションを指定した場合、リポジトリ内の `.ipynb` を自動検出し、nbconvert で順番に実行して `executed-notebooks/` に保存します。生成済み Notebook と `.ipynb_checkpoints` は再実行対象から除外します。セルで例外が発生すると処理は失敗します（`--allow-errors` は使いません）。完走後はカーネルを即時終了し、長い終了処理を残しません。[J1][J2]
 9. `plot_digits_classification.ipynb` の最後のセルは、学習したSVCの支持ベクトル、双対係数、切片、評価指標を `mnist/plot_digits_predition.html` 内へ保存します。HTMLの他の部分は変更しません。[R2]
 
+venv モードでは、Conda の代わりに Python 3.10〜3.14 を探し、リポジトリ直下の `.venv` に仮想環境を作ります。Python が見つからない場合、Windows では python.org の Python 3.12.10 を `%LOCALAPPDATA%\Programs\Python\Python312` へユーザー単位で、macOS では同じ版の python.org 公式 pkg を（実行前に確認し、macOS のパスワード入力を求めて）導入します。Linux ではディストリビューションの Python を使い、`python3-venv` が無い場合だけ確認のうえ導入します。
+
 既存の `mnist.yml` は Windows 固有ビルドを含む当時の完全スナップショットなので変更していません。新しい `environment.yml` は、Notebook が直接使うパッケージと元ファイルのバージョンだけを記載しています。Conda 公式資料でも、完全な明示仕様は通常プラットフォーム固有で、クロスプラットフォーム共有には直接指定したパッケージのみを使う方法が案内されています。[R4][C1]
 
 ## Windows の手順
 
-### 1. PowerShell 7 を確認
+### 1. PowerShell を確認（任意）
 
-PowerShell 7 を起動し、次を実行します。
+`setup\setup-windows.cmd` は Windows 標準の Windows PowerShell 5.1 でスクリプトを実行するため、PowerShell 7 は必須ではありません。以下の `pwsh.exe` の例を使う場合だけ、PowerShell 7 を起動して次を実行します。
 
 ```powershell
 $PSVersionTable.PSVersion
@@ -65,7 +67,13 @@ Windows 10 などで WinGet を利用できない場合は、同じ Microsoft �
 
 ### 2. セットアップのみ実行
 
-リポジトリのルートへ移動し、スクリプトと `environment.yml` の内容を確認してから実行します。
+リポジトリのルートへ移動し、スクリプトと `environment.yml` の内容を確認してから実行します。コマンド プロンプトまたは PowerShell から次を実行します（以下の `pwsh.exe` の例と同じオプションを指定できます）。
+
+```powershell
+setup\setup-windows.cmd
+```
+
+PowerShell 7 を使う場合は次のとおりです。
 
 ```powershell
 pwsh.exe -NoLogo -NoProfile -File .\setup\setup-windows.ps1
@@ -73,7 +81,7 @@ pwsh.exe -NoLogo -NoProfile -File .\setup\setup-windows.ps1
 
 これにより環境構築、依存確認、MNIST データ準備まで行います。管理者権限は要求しません。既定のモードは Anaconda で、インストーラーはユーザー領域へ入ります。
 
-Conda の公式資料に従い、Windows のインストール先には空白や特殊文字を避けてください。[M1] 既定パスにそれらが含まれる場合、スクリプトは推測で別の場所へ導入せず停止します。書き込み可能な ASCII パスを明示して再実行してください。
+Conda の公式資料に従い、Windows のインストール先には空白や特殊文字を避けてください。[M1] 既定パス（ユーザー名）に空白や ASCII 以外の文字が含まれる場合、スクリプトは自動的に `C:\mlfb` をインストール先に使い、その旨を表示します。別の場所を使う場合は、書き込み可能な ASCII パスを `-InstallRoot` で指定してください。
 
 ```powershell
 pwsh.exe -NoLogo -NoProfile -File .\setup\setup-windows.ps1 -InstallRoot 'D:\Conda'
@@ -92,7 +100,7 @@ pwsh.exe -NoLogo -NoProfile -File .\setup\setup-windows.ps1 -RunNotebooks
 既存 Conda の場所を明示する場合:
 
 ```powershell
-pwsh.exe -NoLogo -NoProfile -File .\setup\setup-windows.ps1 -CondaExecutable 'C:\path\to\conda.exe' -RunNotebooks
+pwsh.exe -NoLogo -NoProfile -File .\setup\setup-windows.ps1 -CondaPath 'C:\path\to\conda.exe' -RunNotebooks
 ```
 
 データの事前取得を省略する場合:

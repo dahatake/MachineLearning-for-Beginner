@@ -94,7 +94,7 @@ function Install-Python {
         }
         $process = Start-Process -FilePath $installer -ArgumentList @(
             "/quiet", "InstallAllUsers=0", "TargetDir=`"$Destination`"", "PrependPath=0",
-            "Include_pip=1", "Include_test=0", "Shortcuts=0"
+            "Include_pip=1", "Include_test=0", "Include_launcher=0", "Shortcuts=0"
         ) -Wait -PassThru
         if ($process.ExitCode -ne 0) { throw "Python インストーラーが失敗しました。終了コード: $($process.ExitCode)" }
     }
