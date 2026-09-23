@@ -93,7 +93,7 @@ function Install-Python {
             throw "Python インストーラーの SHA-256 が一致しません。期待値: $expectedHash / 実測値: $actualHash"
         }
         $process = Start-Process -FilePath $installer -ArgumentList @(
-            "/quiet", "InstallAllUsers=0", "TargetDir=$Destination", "PrependPath=0",
+            "/quiet", "InstallAllUsers=0", "TargetDir=`"$Destination`"", "PrependPath=0",
             "Include_pip=1", "Include_test=0", "Shortcuts=0"
         ) -Wait -PassThru
         if ($process.ExitCode -ne 0) { throw "Python インストーラーが失敗しました。終了コード: $($process.ExitCode)" }
@@ -259,7 +259,10 @@ function Get-Python {
         if ($LASTEXITCODE -eq 0) { return $py.Source }
     }
     $python = Get-Command python.exe -ErrorAction SilentlyContinue
-    if ($python -and $python.Source -notmatch 'WindowsApps') { return @($python.Source) }
+    if ($python -and $python.Source -notmatch 'WindowsApps') {
+        $versionCheck = & $python.Source -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>$null
+        if ($LASTEXITCODE -eq 0 -and $versionCheck -match '^3\.(1[0-4])$') { return @($python.Source) }
+    }
     Write-Host "既存の Python（3.10〜3.14）が見つからないため、python.org から Python $($Config["python_version"]) をインストールします。"
     $destination = Join-Path $env:LOCALAPPDATA "Programs\Python\Python312"
     return (Install-Python $Config $destination)
