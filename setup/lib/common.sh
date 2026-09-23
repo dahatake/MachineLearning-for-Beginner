@@ -759,7 +759,14 @@ mlfb_remove_envs() {
                 if [ "${conda}" = "${removed_conda}" ]; then
                     continue
                 fi
-                mlfb_run "remove conda environment" "${conda}" env remove --name "${MLFB_ENVIRONMENT_NAME}" --yes
+                condarc="$(mlfb_write_condarc)"
+                if [ "${MLFB_DRY_RUN}" -eq 1 ] || mlfb_conda_env_exists "${conda}" "${condarc}"; then
+                    mlfb_run "remove conda environment" \
+                        env CONDARC="${condarc}" CONDA_CHANNELS="conda-forge,pytorch" CONDA_DEFAULT_CHANNELS="" \
+                        "${conda}" env remove --name "${MLFB_ENVIRONMENT_NAME}" --yes
+                else
+                    mlfb_info "Conda 環境は見つかりません: ${MLFB_ENVIRONMENT_NAME}"
+                fi
                 removed_conda="${conda}"
             else
                 mlfb_info "Conda は見つかりません: ${conda_mode}"
