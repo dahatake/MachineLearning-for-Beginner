@@ -1,4 +1,4 @@
-name: Phase 0 macOS package spike
+name: Phase 0 macOS installer spike
 
 on:
   workflow_dispatch:
@@ -18,19 +18,19 @@ jobs:
     steps:
       - name: Download and verify installer
         env:
-          INSTALLER: Anaconda3-2026.07-1-MacOSX-arm64.pkg
-          SHA256: 904c76de27ee3d7441e9484450f0027b481a1f4fc49aa9650ebff34119fafd18
+          INSTALLER: Anaconda3-2026.07-1-MacOSX-arm64.sh
+          SHA256: 6a9b63c645db4dbe293ffe9f168f7e380fe7a041fc863e67ee84db027425bce2
         run: |
           set -euo pipefail
           curl --fail --location --output "$RUNNER_TEMP/$INSTALLER" "https://repo.anaconda.com/archive/$INSTALLER"
           echo "$SHA256  $RUNNER_TEMP/$INSTALLER" | shasum -a 256 --check
       - name: Install for the runner user without sudo
         env:
-          INSTALLER: Anaconda3-2026.07-1-MacOSX-arm64.pkg
+          INSTALLER: Anaconda3-2026.07-1-MacOSX-arm64.sh
         run: |
           set -euo pipefail
-          installer -pkg "$RUNNER_TEMP/$INSTALLER" -target CurrentUserHomeDirectory
-          test -x "$HOME/anaconda3/bin/conda" -o -x "$HOME/opt/anaconda3/bin/conda"
+          bash "$RUNNER_TEMP/$INSTALLER" -b -p "$HOME/anaconda3"
+          test -x "$HOME/anaconda3/bin/conda"
       - name: Record install locations
         run: |
           set -euo pipefail

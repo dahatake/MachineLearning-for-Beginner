@@ -519,8 +519,10 @@ mlfb_validate_conda_platform() {
 
 mlfb_conda_env_exists() {
     conda="$1"
+    condarc="$2"
     [ "${MLFB_DRY_RUN}" -eq 1 ] && return 1
-    "${conda}" run --name "${MLFB_ENVIRONMENT_NAME}" python -c "pass" >/dev/null 2>&1
+    env CONDARC="${condarc}" CONDA_CHANNELS="conda-forge,pytorch" CONDA_DEFAULT_CHANNELS="" \
+        "${conda}" run --name "${MLFB_ENVIRONMENT_NAME}" python -c "pass" >/dev/null 2>&1
 }
 
 mlfb_write_condarc() {
@@ -555,7 +557,7 @@ mlfb_setup_conda_mode() {
 
     mlfb_step 4 "Conda 環境を作成または更新しています" "5〜15 分"
     condarc="$(mlfb_write_condarc)"
-    if mlfb_conda_env_exists "${conda}"; then
+    if mlfb_conda_env_exists "${conda}" "${condarc}"; then
         CONDA_CHANNEL_PRIORITY=flexible mlfb_run "conda env update" \
             env CONDARC="${condarc}" CONDA_CHANNELS="conda-forge,pytorch" CONDA_DEFAULT_CHANNELS="" "${conda}" env update --name "${MLFB_ENVIRONMENT_NAME}" --file "${MLFB_ENVIRONMENT_FILE}" --prune
     else
