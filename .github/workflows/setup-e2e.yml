@@ -1,0 +1,251 @@
+name: Setup validation
+
+on:
+  push:
+    branches: [main, feature/cross-platform-setup]
+    paths:
+      - setup/**
+      - SETUP.md
+      - README.md
+      - mnist/**
+      - .github/workflows/setup-e2e.yml
+  pull_request:
+    paths:
+      - setup/**
+      - SETUP.md
+      - README.md
+      - mnist/**
+      - .github/workflows/setup-e2e.yml
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 1 * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: setup-validation-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: sudo apt-get update && sudo apt-get install --yes shellcheck
+      - shell: pwsh
+        run: Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+      - run: pwsh -NoProfile -File ./setup/tests/run-static-checks.ps1
+      - run: |
+          docker run --rm -v "$PWD:/repo" -w /repo bash:3.2 \
+            bash -n setup/setup-mac.sh setup/setup-linux.sh setup/start-jupyter.sh setup/lib/common.sh
+      - run: |
+          docker run --rm -v "$PWD:/repo" -w /repo bash:3.2 \
+            bash setup/setup-mac.sh --help
+          docker run --rm -v "$PWD:/repo" -w /repo bash:3.2 \
+            bash setup/setup-linux.sh --help
+          docker run --rm -v "$PWD:/repo" -w /repo bash:3.2 \
+            bash setup/setup-linux.sh --mode anaconda --yes --dry-run --skip-data-download
+
+  windows-static:
+    runs-on: windows-2025
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+          Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+          $files = @(".\setup\setup-windows.ps1", ".\setup\lib\common.ps1")
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($file, [ref]$tokens, [ref]$errors)
+            if ($errors) { throw ($errors | Out-String) }
+            $issues = Invoke-ScriptAnalyzer -Path $file -Severity Error
+            if ($issues) { throw ($issues | Out-String) }
+          }
+
+  resolve:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - shell: pwsh
+        run: |
+          $conda = if ($env:CONDA_EXE) { $env:CONDA_EXE } else { "/usr/share/miniconda/bin/conda" }
+          .\setup\tests\resolve-deps.ps1 -CondaExe $conda
+
+  windows-dry-run:
+    runs-on: windows-2025
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - shell: powershell
+        run: |
+          .\setup\setup-windows.ps1 -Mode anaconda -Yes -DryRun -SkipDataDownload
+          .\setup\setup-windows.ps1 -Mode venv -Yes -DryRun -SkipDataDownload
+
+  unix-dry-run:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            script: setup-linux.sh
+          - runner: ubuntu-24.04-arm
+            script: setup-linux.sh
+          - runner: macos-26
+            script: setup-mac.sh
+          - runner: macos-26-intel
+            script: setup-mac.sh
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: bash ./setup/${{ matrix.script }} --mode anaconda --yes --dry-run --skip-data-download
+      - run: bash ./setup/${{ matrix.script }} --mode venv --yes --dry-run --skip-data-download
+
+  windows-e2e:
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [anaconda, miniconda, venv]
+    runs-on: windows-2025
+    timeout-minutes: 90
+    env:
+      MLFB_TEST_ISOLATE: "1"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - shell: powershell
+        run: |
+          .\setup\setup-windows.ps1 -Mode ${{ matrix.mode }} -RunNotebooks -Yes -AcceptAnacondaTos
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          .\setup\setup-windows.ps1 -Mode ${{ matrix.mode }} -RunNotebooks -Yes -AcceptAnacondaTos
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $isolate = Join-Path $env:RUNNER_TEMP ("mlfb-test-home-{0}-{1}" -f $env:USERNAME, (Split-Path -Leaf $PWD))
+          if ("${{ matrix.mode }}" -eq "venv") {
+            & .\.venv\Scripts\python.exe .\setup\tools\check_results.py --root .
+          } else {
+            $tool = if ("${{ matrix.mode }}" -eq "anaconda") { "anaconda3" } else { "miniconda3" }
+            & (Join-Path $isolate "$tool\Scripts\conda.exe") run --no-capture-output --name mlfb-mnist python .\setup\tools\check_results.py --root .
+          }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git diff --exit-code
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          .\setup\setup-windows.ps1 -Remove ${{ matrix.mode }}
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: windows-${{ matrix.mode }}-e2e
+          path: |
+            setup/logs
+            executed-notebooks
+          retention-days: 14
+
+  linux-e2e:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            mode: anaconda
+          - runner: ubuntu-24.04
+            mode: miniconda
+          - runner: ubuntu-24.04
+            mode: venv
+          - runner: ubuntu-24.04-arm
+            mode: anaconda
+          - runner: ubuntu-24.04-arm
+            mode: miniconda
+          - runner: ubuntu-24.04-arm
+            mode: venv
+          - runner: ubuntu-26.04
+            mode: miniconda
+          - runner: ubuntu-26.04
+            mode: venv
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    env:
+      MLFB_TEST_ISOLATE: "1"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: |
+          bash ./setup/setup-linux.sh --mode ${{ matrix.mode }} --run-notebooks --yes --accept-anaconda-tos
+          bash ./setup/setup-linux.sh --mode ${{ matrix.mode }} --run-notebooks --yes --accept-anaconda-tos
+          isolate="/tmp/mlfb-test-home-$(id -u)-$(basename "$PWD")"
+          if [ "${{ matrix.mode }}" = "venv" ]; then
+            ./.venv/bin/python ./setup/tools/check_results.py --root .
+          else
+            tool="${{ matrix.mode }}3"
+            "${isolate}/${tool}/bin/conda" run --no-capture-output --name mlfb-mnist python ./setup/tools/check_results.py --root .
+          fi
+          git diff --exit-code
+          bash ./setup/setup-linux.sh --remove ${{ matrix.mode }} --yes
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: linux-${{ matrix.runner }}-${{ matrix.mode }}-e2e
+          path: |
+            setup/logs
+            executed-notebooks
+          retention-days: 14
+
+  macos-e2e:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-26
+            mode: anaconda
+          - runner: macos-26
+            mode: miniconda
+          - runner: macos-26
+            mode: venv
+          - runner: macos-26-intel
+            mode: anaconda
+          - runner: macos-26-intel
+            mode: miniconda
+          - runner: macos-26-intel
+            mode: venv
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    env:
+      MLFB_TEST_ISOLATE: "1"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: |
+          bash ./setup/setup-mac.sh --mode ${{ matrix.mode }} --run-notebooks --yes --accept-anaconda-tos
+          bash ./setup/setup-mac.sh --mode ${{ matrix.mode }} --run-notebooks --yes --accept-anaconda-tos
+          isolate="${TMPDIR:-/tmp}/mlfb-test-home-$(id -u)-$(basename "$PWD")"
+          if [ "${{ matrix.mode }}" = "venv" ]; then
+            ./.venv/bin/python ./setup/tools/check_results.py --root .
+          else
+            conda="$(find "${isolate}" "${HOME}/opt/anaconda3" -path '*/bin/conda' -type f -print -quit 2>/dev/null)"
+            [ -n "${conda}" ]
+            "${conda}" run --no-capture-output --name mlfb-mnist python ./setup/tools/check_results.py --root .
+          fi
+          git diff --exit-code
+          bash ./setup/setup-mac.sh --remove ${{ matrix.mode }} --yes
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: macos-${{ matrix.runner }}-${{ matrix.mode }}-e2e
+          path: |
+            setup/logs
+            executed-notebooks
+          retention-days: 14
+
+  linux-distros:
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04, debian-12, debian-13, fedora-latest]
+        mode: [anaconda, miniconda, venv]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: bash ./setup/tests/docker/run.sh ${{ matrix.distro }} ${{ matrix.mode }}

@@ -1,0 +1,28 @@
+ARG BASE_IMAGE=ubuntu:24.04
+FROM ${BASE_IMAGE}
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends \
+        bash \
+        ca-certificates \
+        curl \
+        python3 \
+        python3-pip \
+        python3-venv \
+        sudo \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN useradd --create-home --shell /bin/bash mlfb \
+    && printf 'mlfb ALL=(root) NOPASSWD: /usr/bin/apt-get\n' > /etc/sudoers.d/mlfb \
+    && chmod 0440 /etc/sudoers.d/mlfb
+
+WORKDIR /workspace
+RUN chown mlfb:mlfb /workspace
+COPY --chown=mlfb:mlfb setup/ /workspace/setup/
+COPY --chown=mlfb:mlfb mnist/ /workspace/mnist/
+RUN chmod 0755 /workspace/setup/tests/docker/run-e2e.sh
+
+USER mlfb
+ENTRYPOINT ["/workspace/setup/tests/docker/run-e2e.sh"]
