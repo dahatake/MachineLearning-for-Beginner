@@ -522,7 +522,7 @@ mlfb_conda_env_exists() {
     condarc="$2"
     [ "${MLFB_DRY_RUN}" -eq 1 ] && return 1
     env CONDARC="${condarc}" CONDA_CHANNELS="conda-forge,pytorch" CONDA_DEFAULT_CHANNELS="" \
-        "${conda}" run --name "${MLFB_ENVIRONMENT_NAME}" python -c "pass" >/dev/null 2>&1
+        "${conda}" env list --json 2>/dev/null | grep -F "\"${MLFB_ENVIRONMENT_NAME}\"" >/dev/null
 }
 
 mlfb_write_condarc() {
