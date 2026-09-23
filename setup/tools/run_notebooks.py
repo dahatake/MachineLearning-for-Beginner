@@ -31,6 +31,11 @@ def main() -> None:
         output = output_root / relative.with_suffix(".executed.ipynb")
         output.parent.mkdir(parents=True, exist_ok=True)
         notebook = nbformat.read(source, as_version=4)
+        for cell in notebook.cells:
+            if cell.cell_type == "code":
+                cell.source = cell.source.replace(
+                    "from imp import reload", "from importlib import reload"
+                )
         processor = ExecutePreprocessor(timeout=None, shutdown_kernel="immediate")
         if args.kernel_name:
             processor.kernel_name = args.kernel_name

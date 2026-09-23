@@ -215,7 +215,7 @@ function Invoke-CondaSetup {
     Write-Step 4 "mlfb-mnist 環境を作成しています" "5〜15 分"
     Invoke-SetupCommand "Conda 環境の作成または更新" {
         $env:CONDA_CHANNEL_PRIORITY = "flexible"
-        & $conda env update --name $EnvironmentName --file $EnvironmentFile --prune --override-channels --channel conda-forge --channel pytorch
+        & $conda --override-channels --channel conda-forge --channel pytorch env update --name $EnvironmentName --file $EnvironmentFile --prune
     }
     if ($InitShell) { Invoke-SetupCommand "conda init" { & $conda init powershell } }
     return $conda
