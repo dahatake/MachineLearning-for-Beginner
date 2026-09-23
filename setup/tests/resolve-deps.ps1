@@ -79,7 +79,7 @@ try {
         @{ Platform = "win_amd64"; PythonVersion = "310"; Abi = "cp310"; TorchPackages = @("torch==2.3.1+cpu", "torchvision==0.18.1+cpu"); IndexUrl = "https://download.pytorch.org/whl/cpu" },
         @{ Platform = "win_amd64"; PythonVersion = "312"; Abi = "cp312"; TorchPackages = @("torch==2.3.1+cpu", "torchvision==0.18.1+cpu"); IndexUrl = "https://download.pytorch.org/whl/cpu" },
         @{ Platform = "macosx_10_15_x86_64"; PythonVersion = "310"; Abi = "cp310"; TorchPackages = @("torch==2.2.2", "torchvision==0.17.2"); IndexUrl = "" },
-        @{ Platform = "macosx_11_0_arm64"; PythonVersion = "312"; Abi = "cp312"; TorchPackages = @("torch==2.3.1", "torchvision==0.18.1"); IndexUrl = "" },
+        @{ Platform = "macosx_12_0_arm64"; PythonVersion = "312"; Abi = "cp312"; TorchPackages = @("torch==2.3.1", "torchvision==0.18.1"); IndexUrl = "" },
         @{ Platform = "manylinux_2_17_x86_64"; PythonVersion = "313"; Abi = "cp313"; TorchPackages = @("torch==2.9.1+cpu", "torchvision==0.24.1+cpu"); IndexUrl = "https://download.pytorch.org/whl/cpu" },
         @{ Platform = "manylinux_2_17_aarch64"; PythonVersion = "314"; Abi = "cp314"; TorchPackages = @("torch==2.9.1", "torchvision==0.24.1"); IndexUrl = "" }
     )
