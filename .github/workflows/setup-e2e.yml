@@ -124,7 +124,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           .\setup\setup-windows.ps1 -Mode ${{ matrix.mode }} -RunNotebooks -Yes -AcceptAnacondaTos
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          $isolate = Join-Path $env:TEMP ("mlfb-test-home-{0}-{1}" -f $env:USERNAME, (Split-Path -Leaf $PWD))
+          $isolate = Join-Path $env:RUNNER_TEMP ("mlfb-test-home-{0}-{1}" -f $env:USERNAME, (Split-Path -Leaf $PWD))
           if ("${{ matrix.mode }}" -eq "venv") {
             & .\.venv\Scripts\python.exe .\setup\tools\check_results.py --root .
           } else {
@@ -223,7 +223,7 @@ jobs:
           if [ "${{ matrix.mode }}" = "venv" ]; then
             ./.venv/bin/python ./setup/tools/check_results.py --root .
           else
-            conda="$(find "${isolate}" -path '*/bin/conda' -type f -print -quit)"
+            conda="$(find "${isolate}" "${HOME}/opt/anaconda3" -path '*/bin/conda' -type f -print -quit 2>/dev/null)"
             [ -n "${conda}" ]
             "${conda}" run --no-capture-output --name mlfb-mnist python ./setup/tools/check_results.py --root .
           fi

@@ -37,6 +37,8 @@ MLFB_DRY_RUN=0
 MLFB_REMOVE_MODE=""
 MLFB_TEST_ISOLATE="${MLFB_TEST_ISOLATE:-0}"
 MLFB_ISOLATED_HOME=""
+MLFB_HOST_HOME="${HOME}"
+MLFB_ALLOW_HOST_MACOS_PKG_CONDA=0
 
 mlfb_usage() {
     cat <<'EOF'
@@ -376,8 +378,12 @@ mlfb_find_conda() {
     if [ "${selected_mode}" = "anaconda" ]; then
         candidates="${prefix}/bin/conda
 ${HOME}/anaconda3/bin/conda
-${HOME}/opt/anaconda3/bin/conda
 /opt/anaconda3/bin/conda"
+        if [ "${MLFB_ALLOW_HOST_MACOS_PKG_CONDA}" = "1" ]; then
+            candidates="${candidates}
+${HOME}/opt/anaconda3/bin/conda
+${MLFB_HOST_HOME}/opt/anaconda3/bin/conda"
+        fi
     else
         candidates="${prefix}/bin/conda
 ${HOME}/miniconda3/bin/conda
@@ -446,7 +452,11 @@ mlfb_install_conda() {
             mlfb_run "${selected_mode} pkg installer" installer -pkg "${installer}" -target CurrentUserHomeDirectory
             if [ "${MLFB_DRY_RUN}" -eq 1 ]; then
                 MLFB_INSTALLED_CONDA="${HOME}/opt/anaconda3/bin/conda"
-            elif MLFB_INSTALLED_CONDA="$(mlfb_find_conda "${selected_mode}")"; then
+            else
+                MLFB_ALLOW_HOST_MACOS_PKG_CONDA=1
+                MLFB_INSTALLED_CONDA="$(mlfb_find_conda "${selected_mode}" || true)"
+            fi
+            if [ -n "${MLFB_INSTALLED_CONDA}" ]; then
                 :
             else
                 mlfb_die "macOS の Anaconda インストール後に conda を見つけられませんでした。"
@@ -531,10 +541,12 @@ mlfb_setup_conda_mode() {
     mlfb_step 4 "Conda 環境を作成または更新しています" "5〜15 分"
     if mlfb_conda_env_exists "${conda}"; then
         CONDA_CHANNEL_PRIORITY=flexible mlfb_run "conda env update" \
-            "${conda}" env update --name "${MLFB_ENVIRONMENT_NAME}" --file "${MLFB_ENVIRONMENT_FILE}" --prune
+            "${conda}" env update --name "${MLFB_ENVIRONMENT_NAME}" --file "${MLFB_ENVIRONMENT_FILE}" --prune \
+            --override-channels --channel conda-forge --channel pytorch
     else
         CONDA_CHANNEL_PRIORITY=flexible mlfb_run "conda env create" \
-            "${conda}" env create --name "${MLFB_ENVIRONMENT_NAME}" --file "${MLFB_ENVIRONMENT_FILE}" --yes
+            "${conda}" env create --name "${MLFB_ENVIRONMENT_NAME}" --file "${MLFB_ENVIRONMENT_FILE}" --yes \
+            --override-channels --channel conda-forge --channel pytorch
     fi
 
     if [ "${MLFB_INIT_SHELL}" -eq 1 ]; then
