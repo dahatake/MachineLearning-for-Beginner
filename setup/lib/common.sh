@@ -532,6 +532,7 @@ mlfb_write_condarc() {
 channels:
   - conda-forge
   - pytorch
+default_channels: []
 channel_priority: flexible
 EOF
     printf '%s\n' "${config}"
@@ -556,10 +557,10 @@ mlfb_setup_conda_mode() {
     condarc="$(mlfb_write_condarc)"
     if mlfb_conda_env_exists "${conda}"; then
         CONDA_CHANNEL_PRIORITY=flexible mlfb_run "conda env update" \
-            env CONDARC="${condarc}" CONDA_CHANNELS="conda-forge,pytorch" "${conda}" env update --name "${MLFB_ENVIRONMENT_NAME}" --file "${MLFB_ENVIRONMENT_FILE}" --prune
+            env CONDARC="${condarc}" CONDA_CHANNELS="conda-forge,pytorch" CONDA_DEFAULT_CHANNELS="" "${conda}" env update --name "${MLFB_ENVIRONMENT_NAME}" --file "${MLFB_ENVIRONMENT_FILE}" --prune
     else
         CONDA_CHANNEL_PRIORITY=flexible mlfb_run "conda env create" \
-            env CONDARC="${condarc}" CONDA_CHANNELS="conda-forge,pytorch" "${conda}" env create --name "${MLFB_ENVIRONMENT_NAME}" --file "${MLFB_ENVIRONMENT_FILE}" --yes
+            env CONDARC="${condarc}" CONDA_CHANNELS="conda-forge,pytorch" CONDA_DEFAULT_CHANNELS="" "${conda}" env create --name "${MLFB_ENVIRONMENT_NAME}" --file "${MLFB_ENVIRONMENT_FILE}" --yes
     fi
 
     if [ "${MLFB_INIT_SHELL}" -eq 1 ]; then

@@ -219,19 +219,25 @@ function Invoke-CondaSetup {
 channels:
   - conda-forge
   - pytorch
+default_channels: []
 channel_priority: flexible
 "@ | Set-Content -LiteralPath $condarc -NoNewline
         $previousCondarc = $env:CONDARC
         $previousChannels = $env:CONDA_CHANNELS
+        $previousDefaultChannels = $env:CONDA_DEFAULT_CHANNELS
+        $previousChannelPriority = $env:CONDA_CHANNEL_PRIORITY
         try {
             $env:CONDARC = $condarc
             $env:CONDA_CHANNELS = "conda-forge,pytorch"
+            $env:CONDA_DEFAULT_CHANNELS = ""
             $env:CONDA_CHANNEL_PRIORITY = "flexible"
             & $conda env update --name $EnvironmentName --file $EnvironmentFile --prune
         }
         finally {
             $env:CONDARC = $previousCondarc
             $env:CONDA_CHANNELS = $previousChannels
+            $env:CONDA_DEFAULT_CHANNELS = $previousDefaultChannels
+            $env:CONDA_CHANNEL_PRIORITY = $previousChannelPriority
             Remove-Item -LiteralPath $condarc -Force -ErrorAction SilentlyContinue
         }
     }
