@@ -10,6 +10,7 @@ scikit-learnのDigitsデータセットで学習したSVCを、PCまたはMacの
 
 ### Added
 
+- GitHub の zip ダウンロードが Microsoft Defender の誤検知で失敗した場合の対応策として、winget での Git のインストールとクローン、Git を使わない tar.gz 形式での取得、macOS の手順をまとめた `docs/download-without-zip.md` を追加し、`README.md` から案内するようにしました。
 - マウス、タッチ、ペンの描画を8×8の入力へ変換し、ブラウザー内でRBF SVC推論を行う単一HTMLアプリを追加しました。
 - 予測数字、one-vs-one投票、推論時間、8×8入力、Notebookのテスト評価を表示する統計パネルを追加しました。
 - モデルの欠落・不正を起動時に検出し、Notebookの全コード実行手順と再読み込み操作を案内する画面を追加しました。

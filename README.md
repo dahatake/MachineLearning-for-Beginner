@@ -72,11 +72,39 @@ C:\Work
 
 - zip圧縮のファイルは、展開してください。
 
+> [!WARNING]
+> **zipのダウンロードができなかった場合**
+>
+> ブラウザーで「ダウンロードできませんでした - ウイルスが検出されました」と表示されることがあります。これは Microsoft Defender が GitHub の生成した zip ファイルを誤って検知したもので、ファイルの内容にウイルスは含まれていません。
+> この場合は、zip を使わずに、winget で Git をインストールしてクローンしてください。Windows の PowerShell で、以下を上から順に 1 つずつ実行します。
+>
+> ```powershell
+> winget install --id Git.Git -e --source winget --accept-package-agreements --accept-source-agreements
+> ```
+>
+> ```powershell
+> $env:Path = [Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [Environment]::GetEnvironmentVariable("Path", "User")
+> ```
+>
+> ```powershell
+> New-Item -ItemType Directory -Force -Path C:\Work
+> ```
+>
+> ```powershell
+> Set-Location C:\Work
+> ```
+>
+> ```powershell
+> git clone https://github.com/dahatake/MachineLearning-for-Beginner.git
+> ```
+>
+> 各コマンドの意味、Git を使わない方法（tar.gz 形式での取得）、macOS の手順、うまくいかない場合の対処は、[zip を使わずにファイルを取得する手順](docs/download-without-zip.md) を参照してください。
+
 > [!Tips]
 > **クローン**は、ダウンロードとほぼ同じ意味です。厳密には勿論、異なるのですが、今の段階ではあまり気にしなくてよいです。
 > クローンをする場合は、Gitというツールを使って、GitHubなどにあるファイルの複製を、自分のPCあるいはMacにダウンロードして構成します。クローンをした場合は、その後のPCあるいはMacでの作業での変更点を、GitHubなどのクローン元に反映がしやすくなります。このテキストでは、大本のファイルを変更することはありません。
 > クローンをする場合は、以下の手順を実行します。
-> - (自分のPCもしくはMacにGitがインストール済みの場合) git clone コマンドでクローンします。
+> - (自分のPCもしくはMacにGitがインストール済みの場合) git clone コマンドでクローンします。Git のインストール方法は [zip を使わずにファイルを取得する手順](docs/download-without-zip.md) を参照してください。
 > ```shell
 > git clone https://github.com/dahatake/MachineLearning-for-Beginner.git
 > ```
